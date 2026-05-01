@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Arquivos de Build/SquareCloud
+squarecloud.zip
+
+# Next.js Build Output
+dist/

@@ -178,10 +178,38 @@ export async function sendStatusUpdateNotification(payload: {
   newStatus: string;
   price: number;
 }): Promise<void> {
+  const statusEmoji = STATUS_EMOJI[payload.newStatus] || "❓";
+  
+  const embed = {
+    title: `🔄 Pedido Atualizado — \`${payload.code}\``,
+    color:
+      payload.newStatus === "entregue"
+        ? 0x22c55e
+        : payload.newStatus === "cancelado"
+        ? 0xef4444
+        : payload.newStatus === "pago"
+        ? 0x3b82f6
+        : 0xeab308,
+    fields: [
+      { name: "📦 Produto", value: payload.productTitle, inline: true },
+      {
+        name: "📋 Novo Status",
+        value: `${statusEmoji} ${payload.newStatus.charAt(0).toUpperCase() + payload.newStatus.slice(1)}`,
+        inline: true,
+      },
+    ],
+    footer: { text: "Detroit Roleplay Store" },
+    timestamp: new Date().toISOString(),
+  };
+
+  // Enviar DM ao usuário
+  await sendDM(payload.userDiscordId, {
+    embeds: [{ ...embed, description: "O status do seu pedido foi atualizado!" }],
+  });
+
   if (!WEBHOOK_URL) return;
 
-  const statusEmoji = STATUS_EMOJI[payload.newStatus] || "❓";
-
+  // Enviar webhook ao canal admin
   try {
     await fetch(WEBHOOK_URL, {
       method: "POST",
@@ -189,25 +217,12 @@ export async function sendStatusUpdateNotification(payload: {
       body: JSON.stringify({
         embeds: [
           {
-            title: `🔄 Pedido Atualizado — \`${payload.code}\``,
-            color:
-              payload.newStatus === "entregue"
-                ? 0x22c55e
-                : payload.newStatus === "cancelado"
-                ? 0xef4444
-                : payload.newStatus === "pago"
-                ? 0x3b82f6
-                : 0xeab308,
+            ...embed,
             fields: [
-              { name: "📦 Produto", value: payload.productTitle, inline: true },
+              ...embed.fields,
               {
                 name: "👤 Usuário",
                 value: `<@${payload.userDiscordId}>`,
-                inline: true,
-              },
-              {
-                name: "📋 Novo Status",
-                value: `${statusEmoji} ${payload.newStatus.charAt(0).toUpperCase() + payload.newStatus.slice(1)}`,
                 inline: true,
               },
               {
@@ -215,9 +230,7 @@ export async function sendStatusUpdateNotification(payload: {
                 value: `R$ ${payload.price.toFixed(2)}`,
                 inline: true,
               },
-            ],
-            footer: { text: "Detroit Roleplay Store" },
-            timestamp: new Date().toISOString(),
+            ]
           },
         ],
         username: "Detroit Store",
@@ -228,6 +241,7 @@ export async function sendStatusUpdateNotification(payload: {
     console.error("❌ Erro ao notificar atualização de status:", error);
   }
 }
+
 
 /**
  * Envia DM privada ao comprador confirmando o pedido.
