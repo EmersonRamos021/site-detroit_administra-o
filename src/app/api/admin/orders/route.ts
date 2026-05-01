@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
   // Busca pedidos paginados — LIMIT/OFFSET devem ser inteiros
   const orders = await query(
-    `SELECT o.id, o.code, o.status, o.price, o.created_at, o.updated_at,
+    `SELECT o.id, o.code, o.status, o.price, o.created_at, o.updated_at, o.mp_payment_id,
             p.title as product_title, p.image_url as product_image,
             u.discord_tag as user_tag, u.discord_id as user_discord_id
      FROM orders o

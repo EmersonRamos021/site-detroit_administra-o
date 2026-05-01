@@ -14,6 +14,7 @@ interface Order {
   product_image: string | null;
   user_tag: string;
   user_discord_id: string;
+  mp_payment_id: number | null;
   created_at: string;
 }
 
@@ -143,7 +144,10 @@ export default function AdminOrdersPage() {
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${sc.bg} ${sc.color}`}>{sc.label}</span>
                     </div>
                     <p className="text-sm font-semibold text-white truncate">{order.product_title}</p>
-                    <p className="text-xs text-zinc-500">por {order.user_tag} • {new Date(order.created_at).toLocaleDateString("pt-BR")}</p>
+                    <p className="text-xs text-zinc-500">
+                      por {order.user_tag} • {new Date(order.created_at).toLocaleDateString("pt-BR")}
+                      {order.mp_payment_id && ` • PIX ID: ${order.mp_payment_id}`}
+                    </p>
                   </div>
                   <span className="text-base font-mono font-bold text-white flex-shrink-0 mr-4">
                     R$ {Number(order.price).toFixed(2)}
