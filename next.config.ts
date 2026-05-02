@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  experimental: {
+    cpus: 1,
+    workerThreads: false,
+    memoryBasedWorkersCount: true,
+  },
 };
 
 export default nextConfig;
