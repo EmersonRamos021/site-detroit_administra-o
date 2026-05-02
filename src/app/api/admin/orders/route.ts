@@ -38,12 +38,28 @@ export async function GET(request: NextRequest) {
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
   // Busca pedidos paginados — LIMIT/OFFSET devem ser inteiros
-  const orders = await query(
+  const orders = await query<{
+    id: number;
+    code: string;
+    status: string;
+    price: number;
+    created_at: string;
+    updated_at: string;
+    mp_payment_id: string;
+    product_title: string;
+    product_image: string;
+    user_tag: string;
+    user_discord_id: string;
+  }>(
     `SELECT o.id, o.code, o.status, o.price, o.created_at, o.updated_at, o.mp_payment_id,
-            p.title as product_title, p.image_url as product_image,
-            u.discord_tag as user_tag, u.discord_id as user_discord_id
+            p.title as legacy_product_title, p.image_url as product_image,
+            u.discord_tag as user_tag, u.discord_id as user_discord_id,
+            (SELECT GROUP_CONCAT(CONCAT(oi.quantity, 'x ', p2.title) SEPARATOR ', ')
+             FROM order_items oi
+             INNER JOIN products p2 ON oi.product_id = p2.id
+             WHERE oi.order_id = o.id) as items_title
      FROM orders o
-     INNER JOIN products p ON o.product_id = p.id
+     LEFT JOIN products p ON o.product_id = p.id
      INNER JOIN users u ON o.user_id = u.id
      ${whereClause}
      ORDER BY o.created_at DESC
@@ -51,7 +67,14 @@ export async function GET(request: NextRequest) {
     whereParams
   );
 
-  return Response.json({ orders, total, page, totalPages, limit });
+  // Mapear para garantir que o título do produto está correto (legado vs novo)
+  const formattedOrders = orders.map(o => ({
+    ...o,
+    product_title: o.items_title || o.legacy_product_title || "Itens Múltiplos",
+    product_image: o.product_image || "/logodetroit.png" // Fallback image if multiple items
+  }));
+
+  return Response.json({ orders: formattedOrders, total, page, totalPages, limit });
 }
 
 // PATCH — Atualizar status do pedido
@@ -69,17 +92,20 @@ export async function PATCH(request: Request) {
 
   await query("UPDATE orders SET status = ? WHERE id = ?", [status, id]);
 
-  // Buscar dados do pedido para notificação
-  try {
     const orders = await query<{
       code: string;
       price: number;
-      product_title: string;
+      legacy_product_title: string;
+      items_title: string;
       user_discord_id: string;
     }>(
-      `SELECT o.code, o.price, p.title as product_title, u.discord_id as user_discord_id
+      `SELECT o.code, o.price, p.title as legacy_product_title, u.discord_id as user_discord_id,
+              (SELECT GROUP_CONCAT(CONCAT(oi.quantity, 'x ', p2.title) SEPARATOR ', ')
+               FROM order_items oi
+               INNER JOIN products p2 ON oi.product_id = p2.id
+               WHERE oi.order_id = o.id) as items_title
        FROM orders o
-       INNER JOIN products p ON o.product_id = p.id
+       LEFT JOIN products p ON o.product_id = p.id
        INNER JOIN users u ON o.user_id = u.id
        WHERE o.id = ?`,
       [id]
@@ -89,7 +115,7 @@ export async function PATCH(request: Request) {
       const order = orders[0];
       sendStatusUpdateNotification({
         code: order.code,
-        productTitle: order.product_title,
+        productTitle: order.items_title || order.legacy_product_title || "Itens Múltiplos",
         userDiscordId: order.user_discord_id,
         newStatus: status,
         price: Number(order.price),
