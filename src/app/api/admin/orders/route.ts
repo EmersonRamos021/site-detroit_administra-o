@@ -46,7 +46,8 @@ export async function GET(request: NextRequest) {
     created_at: string;
     updated_at: string;
     mp_payment_id: string;
-    product_title: string;
+    legacy_product_title: string;
+    items_title: string | null;
     product_image: string;
     user_tag: string;
     user_discord_id: string;
@@ -92,6 +93,7 @@ export async function PATCH(request: Request) {
 
   await query("UPDATE orders SET status = ? WHERE id = ?", [status, id]);
 
+  try {
     const orders = await query<{
       code: string;
       price: number;
