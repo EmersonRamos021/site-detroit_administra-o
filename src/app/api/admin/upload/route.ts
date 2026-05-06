@@ -10,8 +10,6 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE_MB = 5;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
-const blobClient = process.env.SQUARE_CLOUD_API_KEY ? new SquareCloudBlob(process.env.SQUARE_CLOUD_API_KEY) : null;
-
 async function requireAdmin() {
   const session = await auth();
   if (!session?.user?.discord_id || session.user.role !== "admin") {
@@ -33,6 +31,9 @@ export async function POST(request: NextRequest) {
   if (!session) {
     return Response.json({ error: "Não autorizado" }, { status: 403 });
   }
+
+  const apiKey = process.env.SQUARE_CLOUD_API_KEY;
+  const blobClient = apiKey ? new SquareCloudBlob(apiKey) : null;
 
   try {
     const formData = await request.formData();
