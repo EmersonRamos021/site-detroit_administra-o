@@ -2,28 +2,40 @@ import { auth } from "@/auth";
 import { query } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ChatTeardropText, FileHtml } from "@phosphor-icons/react/dist/ssr";
+import { ChatTeardropText, FileHtml, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 
 interface TicketRow {
   id: number;
   channel_name: string;
   owner_tag: string;
+  owner_id: string;
   ticket_type: string;
   closed_by: string;
   closed_at: Date;
 }
 
-export default async function TicketsListPage() {
+export default async function TicketsListPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const session = await auth();
 
   if (!session?.user || session.user.role !== "admin") {
     redirect("/login");
   }
 
+  const resolvedSearchParams = await searchParams;
+  const q = resolvedSearchParams?.q || "";
+
+  let queryStr = "SELECT id, channel_name, owner_tag, owner_id, ticket_type, closed_by, closed_at FROM tickets";
+  let dbParams: any[] = [];
+  
+  if (q) {
+    queryStr += " WHERE owner_tag LIKE ? OR owner_id LIKE ?";
+    dbParams.push(`%${q}%`, `%${q}%`);
+  }
+  
+  queryStr += " ORDER BY closed_at DESC";
+
   // Não selecionamos o transcript_html aqui para manter a query leve
-  const tickets = await query<TicketRow>(
-    "SELECT id, channel_name, owner_tag, ticket_type, closed_by, closed_at FROM tickets ORDER BY closed_at DESC"
-  );
+  const tickets = await query<TicketRow>(queryStr, dbParams);
 
   return (
     <div className="min-h-[100dvh] pt-28 pb-20 px-6">
@@ -42,6 +54,17 @@ export default async function TicketsListPage() {
             </h1>
             <p className="text-zinc-400 mt-1">Transcrições de tickets fechados no Discord.</p>
           </div>
+
+          <form className="relative w-full md:w-80">
+            <MagnifyingGlass size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <input 
+              type="text" 
+              name="q"
+              defaultValue={q}
+              placeholder="Buscar por ID ou @usuário..." 
+              className="w-full bg-zinc-900/50 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white placeholder-zinc-500 focus:outline-none focus:border-[#3b82f6] transition-colors"
+            />
+          </form>
         </div>
 
         <div className="glass-panel rounded-2xl overflow-hidden">
@@ -73,7 +96,10 @@ export default async function TicketsListPage() {
                       <td className="p-4 text-zinc-300 font-mono text-sm">
                         #{ticket.channel_name}
                       </td>
-                      <td className="p-4 text-white font-medium">{ticket.owner_tag}</td>
+                      <td className="p-4">
+                        <p className="text-white font-medium">{ticket.owner_tag}</p>
+                        <p className="text-xs text-zinc-500 font-mono mt-0.5">{ticket.owner_id}</p>
+                      </td>
                       <td className="p-4">
                         <span className="px-2 py-1 bg-zinc-800 text-xs rounded-lg border border-white/10 text-zinc-300">
                           {ticket.ticket_type}
