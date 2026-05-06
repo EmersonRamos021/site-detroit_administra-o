@@ -87,9 +87,17 @@ export async function POST(request: NextRequest) {
         
         // Remove o arquivo local pois já está na nuvem
         await unlink(localPath).catch(() => {});
-      } catch (err) {
+      } catch (err: any) {
         console.error("❌ Erro ao enviar para SquareCloud:", err);
+        return Response.json({ 
+          error: "Erro na nuvem SquareCloud: " + (err.message || String(err)),
+          fallbackUrl: url 
+        }, { status: 500 });
       }
+    } else {
+      return Response.json({ 
+        error: "SQUARE_CLOUD_API_KEY não encontrada no servidor. Reinicie a aplicação ou configure a variável." 
+      }, { status: 500 });
     }
 
     return Response.json({ success: true, url, filename });
