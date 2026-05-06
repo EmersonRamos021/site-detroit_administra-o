@@ -1,13 +1,16 @@
 import { auth } from "@/auth";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 import { NextRequest } from "next/server";
+import { SquareCloudBlob } from "@squarecloud/blob";
 
 export const dynamic = "force-dynamic";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE_MB = 5;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+const blobClient = process.env.SQUARE_CLOUD_API_KEY ? new SquareCloudBlob(process.env.SQUARE_CLOUD_API_KEY) : null;
 
 async function requireAdmin() {
   const session = await auth();
@@ -62,12 +65,32 @@ export async function POST(request: NextRequest) {
     const uploadDir = join(process.cwd(), "public", "uploads");
     await mkdir(uploadDir, { recursive: true });
 
-    // Salva o arquivo
+    // Salva o arquivo temporariamente
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(join(uploadDir, filename), buffer);
+    const localPath = join(uploadDir, filename);
+    await writeFile(localPath, buffer);
 
-    const url = `/uploads/${filename}`;
+    let url = `/uploads/${filename}`; // Fallback local
+
+    // Se a SquareCloud estiver configurada, faz o upload para a nuvem
+    if (blobClient) {
+      try {
+        console.log(`☁️ Fazendo upload de ${filename} para a SquareCloud Blob...`);
+        const blobObject = await blobClient.objects.create({
+          file: localPath,
+          name: filename
+        });
+        
+        url = blobObject.url;
+        console.log(`✅ Upload concluído: ${url}`);
+        
+        // Remove o arquivo local pois já está na nuvem
+        await unlink(localPath).catch(() => {});
+      } catch (err) {
+        console.error("❌ Erro ao enviar para SquareCloud:", err);
+      }
+    }
 
     return Response.json({ success: true, url, filename });
   } catch (error) {
