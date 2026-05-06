@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { query } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Package, Users, ShoppingCart, Hourglass, Ticket, CurrencyDollar } from "@phosphor-icons/react/dist/ssr";
+import { Package, Users, ShoppingCart, Hourglass, Ticket, CurrencyDollar, ChatTeardropText } from "@phosphor-icons/react/dist/ssr";
 
 interface Stats {
   count: number;
@@ -116,6 +116,18 @@ export default async function AdminPage() {
             <div>
               <p className="font-bold text-white">Gerenciar Financeiro</p>
               <p className="text-sm text-zinc-500">Livro caixa, lucros e retiradas</p>
+            </div>
+          </Link>
+          <Link
+            href="/admin/tickets"
+            className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-[#3b82f6]/50 transition-all flex items-center gap-4"
+          >
+            <div className="w-12 h-12 rounded-xl bg-[#3b82f6]/10 flex items-center justify-center text-[#3b82f6]">
+              <ChatTeardropText size={24} weight="fill" />
+            </div>
+            <div>
+              <p className="font-bold text-white">Histórico de Tickets</p>
+              <p className="text-sm text-zinc-500">Visualizar transcrições do Discord</p>
             </div>
           </Link>
         </div>
