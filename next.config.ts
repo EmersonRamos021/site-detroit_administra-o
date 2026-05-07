@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "public-blob.squarecloud.dev",
+      },
+      {
+        protocol: "https",
         hostname: "picsum.photos",
       }
     ],
