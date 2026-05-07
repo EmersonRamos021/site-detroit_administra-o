@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { writeFile, mkdir, unlink, readFile } from "fs/promises";
 import { join } from "path";
 import { NextRequest } from "next/server";
+import axios from "axios";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +21,9 @@ async function requireAdmin() {
 function sanitizeFilename(name: string): string {
   return name
     .toLowerCase()
-    .replace(/[^a-z0-9.\-_]/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 80);
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .slice(0, 16); // name + prefix can't exceed 32. Keeping it short.
 }
 
 export async function POST(request: NextRequest) {
@@ -58,7 +59,9 @@ export async function POST(request: NextRequest) {
     // Gera nome único: timestamp + nome sanitizado
     const ext = file.name.split(".").pop() || "jpg";
     const baseName = sanitizeFilename(file.name.replace(`.${ext}`, ""));
-    const filename = `${Date.now()}-${baseName}.${ext}`;
+    // O nome do objeto na SquareCloud só pode ter a-z, 0-9 e _ e máx 32 caracteres
+    const validName = `${baseName}_${Date.now().toString().slice(-6)}`;
+    const filename = `${validName}.${ext}`;
 
     // Garante que o diretório existe
     const uploadDir = join(process.cwd(), "public", "uploads");
@@ -84,21 +87,18 @@ export async function POST(request: NextRequest) {
         const blobFormData = new FormData();
         blobFormData.append('file', fileBlob, filename);
 
-        const response = await fetch(`https://blob.squarecloud.app/v1/objects?name=${baseName}`, {
-          method: 'POST',
+        const response = await axios.post(`https://blob.squarecloud.app/v1/objects?name=${validName}`, blobFormData, {
           headers: {
             'Authorization': apiKey,
           },
-          body: blobFormData
+          validateStatus: () => true // Prevent axios from throwing on 4xx/5xx
         });
         
-        const textResponse = await response.text();
+        const data = response.data;
         
-        if (!response.ok) {
-          throw new Error(`SquareCloud API Error (${response.status}): ${textResponse.substring(0, 100)}`);
+        if (response.status !== 200) {
+          throw new Error(`SquareCloud API Error (${response.status}): ${JSON.stringify(data).substring(0, 150)}`);
         }
-        
-        const data = JSON.parse(textResponse);
         
         if (data?.response?.url) {
           url = data.response.url;
