@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
           // Remove o arquivo local pois já está na nuvem
           await unlink(localPath).catch(() => {});
         } else {
-          throw new Error("Formato de resposta desconhecido: " + textResponse.substring(0, 100));
+          throw new Error("Formato de resposta desconhecido: " + JSON.stringify(data).substring(0, 100));
         }
       } catch (err: any) {
         console.error("❌ Erro ao enviar para SquareCloud:", err);
