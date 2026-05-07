@@ -1,8 +1,7 @@
 import { auth } from "@/auth";
-import { writeFile, mkdir, unlink } from "fs/promises";
+import { writeFile, mkdir, unlink, readFile } from "fs/promises";
 import { join } from "path";
 import { NextRequest } from "next/server";
-import { SquareCloudBlob } from "@squarecloud/blob";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +32,6 @@ export async function POST(request: NextRequest) {
   }
 
   const apiKey = process.env.SQUARE_CLOUD_API_KEY;
-  const blobClient = apiKey ? new SquareCloudBlob(apiKey) : null;
 
   try {
     const formData = await request.formData();
@@ -75,21 +73,48 @@ export async function POST(request: NextRequest) {
     let url = `/uploads/${filename}`; // Fallback local
 
     // Se a SquareCloud estiver configurada, faz o upload para a nuvem
-    if (blobClient) {
+    if (apiKey) {
       try {
-        console.log(`☁️ Fazendo upload de ${filename} para a SquareCloud Blob...`);
-        const blobObject = await blobClient.objects.create({
-          file: localPath,
-          name: filename
+        console.log(`☁️ Fazendo upload de ${filename} para a SquareCloud Blob (Via Fetch)...`);
+        
+        // Lê o arquivo local como buffer para envio
+        const fileBuffer = await readFile(localPath);
+        const fileBlob = new Blob([fileBuffer], { type: file.type });
+        
+        const blobFormData = new FormData();
+        blobFormData.append('file', fileBlob, filename);
+
+        const response = await fetch(`https://blob.squarecloud.app/v1/objects?name=${baseName}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': apiKey,
+          },
+          body: blobFormData
         });
         
-        url = blobObject.url;
-        console.log(`✅ Upload concluído: ${url}`);
+        const textResponse = await response.text();
         
-        // Remove o arquivo local pois já está na nuvem
-        await unlink(localPath).catch(() => {});
+        if (!response.ok) {
+          throw new Error(`SquareCloud API Error (${response.status}): ${textResponse.substring(0, 100)}`);
+        }
+        
+        const data = JSON.parse(textResponse);
+        
+        if (data?.response?.url) {
+          url = data.response.url;
+          console.log(`✅ Upload concluído: ${url}`);
+          // Remove o arquivo local pois já está na nuvem
+          await unlink(localPath).catch(() => {});
+        } else {
+          throw new Error("Formato de resposta desconhecido: " + textResponse.substring(0, 100));
+        }
       } catch (err: any) {
         console.error("❌ Erro ao enviar para SquareCloud:", err);
+        // Fallback para URL absoluta (assim funciona no Frontend também)
+        const host = request.headers.get("host") || "localhost:3000";
+        const protocol = host.includes("localhost") ? "http" : "https";
+        url = `${protocol}://${host}/uploads/${filename}`;
+        
         return Response.json({ 
           error: "Erro na nuvem SquareCloud: " + (err.message || String(err)),
           fallbackUrl: url 
