@@ -115,10 +115,8 @@ export async function POST(request: NextRequest) {
         const protocol = host.includes("localhost") ? "http" : "https";
         url = `${protocol}://${host}/uploads/${filename}`;
         
-        return Response.json({ 
-          error: "Erro na nuvem SquareCloud: " + (err.message || String(err)),
-          fallbackUrl: url 
-        }, { status: 500 });
+        console.log("⚠️ Usando fallback local devido a erro na SquareCloud:", url);
+        return Response.json({ success: true, url, filename, warning: "Upload na nuvem falhou, usando servidor local." });
       }
     } else {
       return Response.json({ 
