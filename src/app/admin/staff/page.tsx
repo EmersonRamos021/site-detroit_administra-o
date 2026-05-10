@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { UserPlus, Trash, Link as LinkIcon, CheckCircle } from "@phosphor-icons/react/dist/ssr";
+import { UserPlus, Trash, Link as LinkIcon, CheckCircle, PencilSimple, X } from "@phosphor-icons/react/dist/ssr";
 
 const PERMISSIONS_LIST = [
   { id: "products", label: "Produtos" },
@@ -23,6 +23,7 @@ export default function StaffPage() {
   
   const [email, setEmail] = useState("");
   const [selectedPerms, setSelectedPerms] = useState<string[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const [inviteLink, setInviteLink] = useState("");
@@ -67,29 +68,66 @@ export default function StaffPage() {
     setCopied(false);
 
     try {
-      const res = await fetch("/api/admin/staff", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, permissions: selectedPerms }),
-      });
+      if (editingId) {
+        // Modo Edição
+        const res = await fetch("/api/admin/staff", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingId, permissions: selectedPerms }),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.error || "Erro ao criar staff");
-        setCreating(false);
-        return;
+        if (!res.ok) {
+          setError(data.error || "Erro ao atualizar staff");
+          setCreating(false);
+          return;
+        }
+
+        cancelEdit();
+        fetchStaff();
+      } else {
+        // Modo Criação
+        const res = await fetch("/api/admin/staff", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, permissions: selectedPerms }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.error || "Erro ao criar staff");
+          setCreating(false);
+          return;
+        }
+
+        const link = `${window.location.origin}/invite?token=${data.inviteToken}`;
+        setInviteLink(link);
+        setEmail("");
+        setSelectedPerms([]);
+        fetchStaff();
       }
-
-      const link = `${window.location.origin}/invite?token=${data.inviteToken}`;
-      setInviteLink(link);
-      setEmail("");
-      setSelectedPerms([]);
-      fetchStaff();
     } catch (err) {
       setError("Erro interno");
     }
     setCreating(false);
+  }
+
+  function startEdit(user: any) {
+    setEditingId(user.id);
+    setEmail(user.email || "");
+    const perms = typeof user.permissions === 'string' ? JSON.parse(user.permissions || "[]") : (user.permissions || []);
+    setSelectedPerms(perms);
+    setError("");
+    setInviteLink("");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEmail("");
+    setSelectedPerms([]);
+    setError("");
   }
 
   async function handleDelete(id: number) {
@@ -125,10 +163,26 @@ export default function StaffPage() {
         
         {/* FORMULÁRIO DE CRIAÇÃO */}
         <div className="lg:col-span-1 bg-zinc-900/50 border border-white/5 rounded-3xl p-6 h-fit">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <UserPlus size={24} className="text-[var(--color-detroit-red)]" />
-            Novo Membro
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              {editingId ? (
+                <>
+                  <PencilSimple size={24} className="text-[#fcd34d]" />
+                  Editar Permissões
+                </>
+              ) : (
+                <>
+                  <UserPlus size={24} className="text-[var(--color-detroit-red)]" />
+                  Novo Membro
+                </>
+              )}
+            </h2>
+            {editingId && (
+              <button onClick={cancelEdit} className="text-zinc-500 hover:text-white transition-colors" title="Cancelar edição">
+                <X size={20} />
+              </button>
+            )}
+          </div>
 
           <form onSubmit={handleCreate} className="flex flex-col gap-4">
             {error && (
@@ -142,10 +196,11 @@ export default function StaffPage() {
               <input
                 type="email"
                 required
+                disabled={!!editingId}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="staff@gmail.com"
-                className="w-full bg-black/50 border border-white/10 rounded-xl h-12 px-4 text-white focus:outline-none focus:border-[var(--color-detroit-red)] transition-colors"
+                className="w-full bg-black/50 border border-white/10 rounded-xl h-12 px-4 text-white focus:outline-none focus:border-[var(--color-detroit-red)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -170,9 +225,9 @@ export default function StaffPage() {
             <button
               type="submit"
               disabled={creating}
-              className="w-full h-12 mt-2 bg-zinc-100 text-black font-bold rounded-xl hover:bg-white transition-colors disabled:opacity-50"
+              className={`w-full h-12 mt-2 font-bold rounded-xl transition-colors disabled:opacity-50 ${editingId ? 'bg-[#fcd34d] text-black hover:bg-yellow-500' : 'bg-zinc-100 text-black hover:bg-white'}`}
             >
-              {creating ? "Gerando Convite..." : "Gerar Link de Convite"}
+              {creating ? (editingId ? "Salvando..." : "Gerando Convite...") : (editingId ? "Salvar Alterações" : "Gerar Link de Convite")}
             </button>
           </form>
 
@@ -257,13 +312,22 @@ export default function StaffPage() {
                         </td>
                         <td className="p-4 text-right">
                           {!isSuper && (
-                            <button
-                              onClick={() => handleDelete(user.id)}
-                              className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors ml-auto"
-                              title="Remover Conta"
-                            >
-                              <Trash size={16} />
-                            </button>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => startEdit(user)}
+                                className="w-8 h-8 rounded-lg bg-[#fcd34d]/10 text-[#fcd34d] hover:bg-[#fcd34d] hover:text-black flex items-center justify-center transition-colors"
+                                title="Editar Permissões"
+                              >
+                                <PencilSimple size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(user.id)}
+                                className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors"
+                                title="Remover Conta"
+                              >
+                                <Trash size={16} />
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>

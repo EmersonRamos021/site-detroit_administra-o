@@ -49,6 +49,38 @@ export async function POST(req: Request) {
   }
 }
 
+export async function PUT(req: Request) {
+  const session = await auth();
+  if (session?.user?.role !== "superadmin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { id, permissions } = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ error: "ID obrigatório" }, { status: 400 });
+    }
+
+    // Bloqueia a edição das permissões de id = 1 ou de superadmins
+    if (id === 1) {
+      return NextResponse.json({ error: "Não é possível alterar as permissões do superadmin." }, { status: 400 });
+    }
+
+    const permsJson = JSON.stringify(permissions || []);
+
+    await query(
+      "UPDATE admins SET permissions = ? WHERE id = ?",
+      [permsJson, id]
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Failed to update staff" }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: Request) {
   const session = await auth();
   if (session?.user?.role !== "superadmin") {
