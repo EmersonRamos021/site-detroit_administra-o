@@ -29,18 +29,19 @@ export async function GET() {
       updates.push("invite_token added");
     }
     
-    // Atualiza o user atual para ser o superadmin e ter o email
+    // Atualiza o user atual para ser o superadmin e ter o email e senha nova
     const rows = await query<any>("SELECT id FROM admins LIMIT 1");
     if (rows.length > 0) {
       const id = rows[0].id;
       const email = "detroitroleplay2k26@gmail.com";
       const permissions = JSON.stringify(["all"]);
+      const newPasswordHash = "$2b$10$y08BJrck8jdi1AMiIMs0SugH4CkKa6HGyNfCbnb3uJsosQCemjOQS";
       
       await query(
-        "UPDATE admins SET email = ?, role = 'superadmin', permissions = ? WHERE id = ?",
-        [email, permissions, id]
+        "UPDATE admins SET email = ?, role = 'superadmin', permissions = ?, password_hash = ? WHERE id = ?",
+        [email, permissions, newPasswordHash, id]
       );
-      updates.push(`admin updated to ${email}`);
+      updates.push(`admin updated to ${email} with new password`);
     }
     
     return NextResponse.json({ success: true, updates });
