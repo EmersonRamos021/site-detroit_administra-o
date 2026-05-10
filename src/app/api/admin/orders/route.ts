@@ -5,17 +5,12 @@ import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.discord_id || session.user.role !== "admin") {
-    return null;
-  }
-  return session;
-}
+import { requirePermission } from "@/lib/auth-check";
+import { logAdminAction } from "@/lib/logger";
 
 // GET — Lista todos os pedidos (admin) com paginação e filtro
 export async function GET(request: NextRequest) {
-  const session = await requireAdmin();
+  const session = await requirePermission("orders");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const searchParams = request.nextUrl.searchParams;
@@ -80,7 +75,7 @@ export async function GET(request: NextRequest) {
 
 // PATCH — Atualizar status do pedido
 export async function PATCH(request: Request) {
-  const session = await requireAdmin();
+  const session = await requirePermission("orders");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const body = await request.json();
@@ -126,6 +121,8 @@ export async function PATCH(request: Request) {
   } catch {
     // Notificação é fire-and-forget, não quebra a atualização
   }
+
+  await logAdminAction(session.user.email!, "EDITAR_STATUS_PEDIDO", `Pedido ID: ${id}, Novo Status: ${status}`);
 
   return Response.json({ success: true });
 }

@@ -3,17 +3,12 @@ import { query } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.discord_id || session.user.role !== "admin") {
-    return null;
-  }
-  return session;
-}
+import { requirePermission } from "@/lib/auth-check";
+import { logAdminAction } from "@/lib/logger";
 
 // GET — Lista todos os produtos (incluindo inativos) + categorias
 export async function GET() {
-  const session = await requireAdmin();
+  const session = await requirePermission("products");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const products = await query(
@@ -33,7 +28,7 @@ export async function GET() {
 
 // POST — Criar produto
 export async function POST(request: Request) {
-  const session = await requireAdmin();
+  const session = await requirePermission("products");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const body = await request.json();
@@ -49,12 +44,14 @@ export async function POST(request: Request) {
     [title, description || null, price, image_url || null, category_id, active ? 1 : 0, featured ? 1 : 0]
   );
 
+  await logAdminAction(session.user.email!, "CRIAR_PRODUTO", `Título: ${title}, Preço: ${price}`);
+
   return Response.json({ success: true });
 }
 
 // PUT — Atualizar produto
 export async function PUT(request: Request) {
-  const session = await requireAdmin();
+  const session = await requirePermission("products");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const body = await request.json();
@@ -68,12 +65,14 @@ export async function PUT(request: Request) {
     [title, description || null, price, image_url || null, category_id, active ? 1 : 0, featured ? 1 : 0, id]
   );
 
+  await logAdminAction(session.user.email!, "EDITAR_PRODUTO", `ID: ${id}, Título: ${title}`);
+
   return Response.json({ success: true });
 }
 
 // DELETE — Desativar produto (soft delete)
 export async function DELETE(request: Request) {
-  const session = await requireAdmin();
+  const session = await requirePermission("products");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const body = await request.json();
@@ -82,5 +81,6 @@ export async function DELETE(request: Request) {
   if (!id) return Response.json({ error: "ID é obrigatório." }, { status: 400 });
 
   await query("UPDATE products SET active = 0 WHERE id = ?", [id]);
+  await logAdminAction(session.user.email!, "EXCLUIR_PRODUTO", `ID: ${id} desativado`);
   return Response.json({ success: true });
 }

@@ -11,7 +11,8 @@ const PERMISSIONS_LIST = [
   { id: "coupons", label: "Cupons" },
   { id: "finance", label: "Financeiro" },
   { id: "ids", label: "IDs In-Game" },
-  { id: "tickets", label: "Tickets" }
+  { id: "tickets", label: "Tickets" },
+  { id: "logs", label: "Logs de Auditoria" }
 ];
 
 export default function StaffPage() {

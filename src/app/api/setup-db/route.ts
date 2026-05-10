@@ -7,7 +7,17 @@ export async function GET() {
     const columns = await query<any>("SHOW COLUMNS FROM admins");
     const colNames = columns.map(c => c.Field);
     
-    let updates = [];
+    // Verifica se a tabela admin_logs existe
+    await query(`
+      CREATE TABLE IF NOT EXISTS admin_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        admin_email VARCHAR(255) NOT NULL,
+        action VARCHAR(255) NOT NULL,
+        details TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    updates.push("admin_logs table checked/created");
 
     if (!colNames.includes("email")) {
       await query("ALTER TABLE admins ADD COLUMN email VARCHAR(255) NULL UNIQUE AFTER id");

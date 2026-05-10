@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { query } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Package, Users, ShoppingCart, Hourglass, Ticket, CurrencyDollar, ChatTeardropText } from "@phosphor-icons/react/dist/ssr";
+import { Package, Users, ShoppingCart, Hourglass, Ticket, CurrencyDollar, ChatTeardropText, ListDashes } from "@phosphor-icons/react/dist/ssr";
 
 interface Stats {
   count: number;
@@ -158,6 +158,21 @@ export default async function AdminPage() {
             <div>
               <p className="font-bold text-white">Equipe Staff</p>
               <p className="text-sm text-zinc-500">Gerenciar membros e acessos</p>
+            </div>
+          </Link>
+          )}
+          
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('logs')) && (
+          <Link
+            href="/admin/logs"
+            className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-orange-500/50 transition-all flex items-center gap-4"
+          >
+            <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+              <ListDashes size={24} weight="fill" />
+            </div>
+            <div>
+              <p className="font-bold text-white">Logs de Auditoria</p>
+              <p className="text-sm text-zinc-500">Registros de ações da equipe</p>
             </div>
           </Link>
           )}

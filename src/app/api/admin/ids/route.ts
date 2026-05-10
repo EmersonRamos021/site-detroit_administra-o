@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
-import { auth } from "@/auth";
+import { requirePermission } from "@/lib/auth-check";
+import { logAdminAction } from "@/lib/logger";
 
 interface DbId {
   game_id: number;
@@ -25,8 +26,8 @@ async function ensureTable() {
 }
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user) {
+  const session = await requirePermission("ids");
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -42,8 +43,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user) {
+  const session = await requirePermission("ids");
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -107,6 +108,8 @@ export async function POST(req: Request) {
       );
     }
     // --------------------------------
+
+    await logAdminAction(session.user.email!, "EDITAR_STATUS_ID", `ID ${game_id} alterado de ${oldStatus} para ${status}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {

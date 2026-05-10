@@ -3,17 +3,12 @@ import { query } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.discord_id || session.user.role !== "admin") {
-    return null;
-  }
-  return session;
-}
+import { requirePermission } from "@/lib/auth-check";
+import { logAdminAction } from "@/lib/logger";
 
 // GET — Lista todos os cupons
 export async function GET() {
-  const session = await requireAdmin();
+  const session = await requirePermission("coupons");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const coupons = await query(
@@ -27,7 +22,7 @@ export async function GET() {
 
 // POST — Criar cupom
 export async function POST(request: Request) {
-  const session = await requireAdmin();
+  const session = await requirePermission("coupons");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const body = await request.json();
@@ -57,12 +52,14 @@ export async function POST(request: Request) {
     ]
   );
 
+  await logAdminAction(session.user.email!, "CRIAR_CUPOM", `Código: ${code}, Desconto: ${discount_value}`);
+
   return Response.json({ success: true });
 }
 
 // PUT — Atualizar cupom
 export async function PUT(request: Request) {
-  const session = await requireAdmin();
+  const session = await requirePermission("coupons");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const body = await request.json();
@@ -85,12 +82,14 @@ export async function PUT(request: Request) {
     ]
   );
 
+  await logAdminAction(session.user.email!, "EDITAR_CUPOM", `Código: ${code}, Desconto: ${discount_value}`);
+
   return Response.json({ success: true });
 }
 
 // DELETE — Deletar cupom
 export async function DELETE(request: Request) {
-  const session = await requireAdmin();
+  const session = await requirePermission("coupons");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const body = await request.json();
@@ -99,5 +98,6 @@ export async function DELETE(request: Request) {
   if (!id) return Response.json({ error: "ID é obrigatório." }, { status: 400 });
 
   await query("DELETE FROM coupons WHERE id = ?", [id]);
+  await logAdminAction(session.user.email!, "EXCLUIR_CUPOM", `ID excluído: ${id}`);
   return Response.json({ success: true });
 }

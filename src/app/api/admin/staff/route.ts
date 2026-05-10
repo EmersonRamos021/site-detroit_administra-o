@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { auth } from "@/auth";
 import crypto from "crypto";
+import { logAdminAction } from "@/lib/logger";
 
 export async function GET() {
   const session = await auth();
@@ -39,6 +40,8 @@ export async function POST(req: Request) {
       [email, permsJson, inviteToken]
     );
 
+    await logAdminAction(session.user.email!, "CRIAR_STAFF", `Email: ${email}, Permissões: ${permsJson}`);
+
     return NextResponse.json({ success: true, inviteToken });
   } catch (error: any) {
     console.error(error);
@@ -74,6 +77,8 @@ export async function PUT(req: Request) {
       [permsJson, id]
     );
 
+    await logAdminAction(session.user.email!, "EDITAR_PERMISSOES_STAFF", `ID: ${id}, Novas Permissões: ${permsJson}`);
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
@@ -96,6 +101,8 @@ export async function DELETE(req: Request) {
     }
 
     await query("DELETE FROM admins WHERE id = ?", [id]);
+    await logAdminAction(session.user.email!, "EXCLUIR_STAFF", `ID excluído: ${id}`);
+    
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
