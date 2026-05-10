@@ -18,7 +18,7 @@ export default function LoginPage() {
     setError("");
 
     const res = await signIn("credentials", {
-      username,
+      email: username,
       password,
       redirect: false,
     });
@@ -58,8 +58,8 @@ export default function LoginPage() {
               className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
             />
             <input
-              type="text"
-              placeholder="Usuário"
+              type="email"
+              placeholder="E-mail"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required

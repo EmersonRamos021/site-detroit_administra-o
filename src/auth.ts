@@ -5,8 +5,10 @@ import { query } from "@/lib/db";
 
 interface DbAdmin {
   id: number;
-  username: string;
+  email: string;
   password_hash: string;
+  role: string;
+  permissions: any;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -14,16 +16,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       credentials: {
-        username: { label: "Usuário", type: "text" },
+        email: { label: "E-mail", type: "email" },
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) return null;
 
         try {
           const admins = await query<DbAdmin>(
-            "SELECT id, username, password_hash FROM admins WHERE username = ?",
-            [credentials.username as string]
+            "SELECT id, email, password_hash, role, permissions FROM admins WHERE email = ?",
+            [credentials.email as string]
           );
 
           if (admins.length === 0) return null;
@@ -35,11 +37,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           );
 
           if (!isValid) return null;
+          
+          let parsedPermissions = [];
+          if (admin.permissions) {
+             parsedPermissions = typeof admin.permissions === 'string' ? JSON.parse(admin.permissions) : admin.permissions;
+          }
 
           return {
             id: admin.id.toString(),
-            name: admin.username,
-            role: "admin",
+            email: admin.email,
+            role: admin.role,
+            permissions: parsedPermissions,
           };
         } catch (error) {
           console.error("Erro na autorização:", error);
@@ -52,7 +60,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role || "admin";
+        token.role = (user as any).role || "staff";
+        token.permissions = (user as any).permissions || [];
+        token.email = user.email;
       }
       return token;
     },
@@ -60,6 +70,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.permissions = token.permissions as string[];
+        session.user.email = token.email as string;
         // Mocking para n quebrar types legados
         (session.user as any).discord_id = token.id;
       }

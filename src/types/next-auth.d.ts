@@ -9,6 +9,7 @@ declare module "next-auth" {
       discord_id?: string;
       db_id?: number;
       role?: string;
+      permissions?: string[];
     };
   }
 }

@@ -15,9 +15,8 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
-  if (session.user.role !== "admin") {
-    redirect("/");
-  }
+  // Se for staff e não tiver permissões explícitas no token (fallback de segurança)
+  const permissions = session.user.permissions || [];
 
   // Buscar estatísticas
   const [productCount] = await query<Stats>("SELECT COUNT(*) as count FROM products");
@@ -58,10 +57,11 @@ export default async function AdminPage() {
         {/* QUICK ACTIONS */}
         <h2 className="text-2xl font-bold text-white mb-6">Ações Rápidas</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Link
-            href="/admin/products"
-            className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-[var(--color-detroit-red)]/50 transition-all flex items-center gap-4"
-          >
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('products')) && (
+            <Link
+              href="/admin/products"
+              className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-[var(--color-detroit-red)]/50 transition-all flex items-center gap-4"
+            >
             <div className="w-12 h-12 rounded-xl bg-[var(--color-detroit-red)]/10 flex items-center justify-center text-[var(--color-detroit-red)]">
               <Package size={24} weight="fill" />
             </div>
@@ -70,6 +70,9 @@ export default async function AdminPage() {
               <p className="text-sm text-zinc-500">Criar, editar e excluir produtos da loja</p>
             </div>
           </Link>
+          )}
+          
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('orders')) && (
           <Link
             href="/admin/orders"
             className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-[var(--color-detroit-red)]/50 transition-all flex items-center gap-4"
@@ -82,6 +85,9 @@ export default async function AdminPage() {
               <p className="text-sm text-zinc-500">Ver e atualizar status dos pedidos</p>
             </div>
           </Link>
+          )}
+
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('coupons')) && (
           <Link
             href="/admin/coupons"
             className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-[var(--color-detroit-red)]/50 transition-all flex items-center gap-4"
@@ -94,6 +100,9 @@ export default async function AdminPage() {
               <p className="text-sm text-zinc-500">Criar códigos de desconto</p>
             </div>
           </Link>
+          )}
+
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('ids')) && (
           <Link
             href="/admin/ids"
             className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-[#fcd34d]/50 transition-all flex items-center gap-4"
@@ -106,6 +115,9 @@ export default async function AdminPage() {
               <p className="text-sm text-zinc-500">Controle de reservas e vendas</p>
             </div>
           </Link>
+          )}
+
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('finance')) && (
           <Link
             href="/admin/finance"
             className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-[#10b981]/50 transition-all flex items-center gap-4"
@@ -118,6 +130,9 @@ export default async function AdminPage() {
               <p className="text-sm text-zinc-500">Livro caixa, lucros e retiradas</p>
             </div>
           </Link>
+          )}
+
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('tickets')) && (
           <Link
             href="/admin/tickets"
             className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-[#3b82f6]/50 transition-all flex items-center gap-4"
@@ -130,6 +145,22 @@ export default async function AdminPage() {
               <p className="text-sm text-zinc-500">Visualizar transcrições do Discord</p>
             </div>
           </Link>
+          )}
+          
+          {session.user.role === 'superadmin' && (
+          <Link
+            href="/admin/staff"
+            className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-purple-500/50 transition-all flex items-center gap-4"
+          >
+            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+              <Users size={24} weight="fill" />
+            </div>
+            <div>
+              <p className="font-bold text-white">Equipe Staff</p>
+              <p className="text-sm text-zinc-500">Gerenciar membros e acessos</p>
+            </div>
+          </Link>
+          )}
         </div>
       </div>
     </div>
