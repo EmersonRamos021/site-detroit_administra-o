@@ -11,6 +11,7 @@ interface Product {
   description: string | null;
   price: number;
   image_url: string | null;
+  in_game_command: string | null;
   category_name: string;
   active: boolean;
   featured: boolean;
@@ -33,6 +34,7 @@ export default function AdminProductsPage() {
     description: "",
     price: "",
     image_url: "",
+    in_game_command: "",
     category_id: "",
     active: true,
     featured: false,
@@ -66,7 +68,7 @@ export default function AdminProductsPage() {
   }, []);
 
   function resetForm() {
-    setForm({ title: "", description: "", price: "", image_url: "", category_id: "", active: true, featured: false });
+    setForm({ title: "", description: "", price: "", image_url: "", in_game_command: "", category_id: "", active: true, featured: false });
     setEditingId(null);
     setShowForm(false);
     setUploadPreview(null);
@@ -81,6 +83,7 @@ export default function AdminProductsPage() {
       description: product.description || "",
       price: String(product.price),
       image_url: product.image_url || "",
+      in_game_command: product.in_game_command || "",
       category_id: String(categories.find(c => c.name === product.category_name)?.id || ""),
       active: product.active,
       featured: product.featured,
@@ -211,6 +214,13 @@ export default function AdminProductsPage() {
               <div>
                 <label className="block text-xs text-zinc-500 uppercase tracking-wider mb-1">Preço (R$)</label>
                 <input type="number" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-white/5 text-white focus:border-[var(--color-detroit-red)] focus:outline-none transition-colors" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs text-zinc-500 uppercase tracking-wider mb-1">
+                  Comando In-Game <span className="text-zinc-600 lowercase">(ex: add_car:nissangtr ou add_vip:ouro)</span>
+                </label>
+                <input value={form.in_game_command} onChange={e => setForm({ ...form, in_game_command: e.target.value })} placeholder="vazio para itens manuais"
                   className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-white/5 text-white focus:border-[var(--color-detroit-red)] focus:outline-none transition-colors" />
               </div>
               <div className="md:col-span-2">
