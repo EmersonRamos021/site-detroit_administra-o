@@ -153,7 +153,11 @@ export default function StaffPage() {
               <label className="block text-sm text-zinc-400 mb-2">Permissões de Acesso</label>
               <div className="space-y-2">
                 {PERMISSIONS_LIST.map((perm) => (
-                  <label key={perm.id} className="flex items-center gap-3 cursor-pointer group">
+                  <label 
+                    key={perm.id} 
+                    className="flex items-center gap-3 cursor-pointer group"
+                    onClick={(e) => { e.preventDefault(); togglePerm(perm.id); }}
+                  >
                     <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedPerms.includes(perm.id) ? 'bg-[var(--color-detroit-red)] border-[var(--color-detroit-red)]' : 'bg-black/50 border-white/20 group-hover:border-white/40'}`}>
                       {selectedPerms.includes(perm.id) && <CheckCircle size={14} weight="bold" className="text-white" />}
                     </div>
