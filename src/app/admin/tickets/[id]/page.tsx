@@ -17,8 +17,16 @@ interface TicketDetail {
 export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
 
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user) {
     redirect("/login");
+  }
+
+  const userRole = session.user.role;
+  const userPermissions = session.user.permissions || [];
+  const hasAccess = userRole === "superadmin" || userPermissions.includes("tickets");
+
+  if (!hasAccess) {
+    redirect("/admin");
   }
 
   const resolvedParams = await params;

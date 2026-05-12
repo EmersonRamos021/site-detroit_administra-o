@@ -17,8 +17,16 @@ interface TicketRow {
 export default async function TicketsListPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const session = await auth();
 
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user) {
     redirect("/login");
+  }
+
+  const userRole = session.user.role;
+  const userPermissions = session.user.permissions || [];
+  const hasAccess = userRole === "superadmin" || userPermissions.includes("tickets");
+
+  if (!hasAccess) {
+    redirect("/admin");
   }
 
   const resolvedSearchParams = await searchParams;
