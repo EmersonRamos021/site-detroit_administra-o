@@ -35,14 +35,29 @@ export default function AdminOrdersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchOrders = useCallback(async (currentPage: number, currentFilter: string) => {
+  // Debounce para pesquisa
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(searchInput);
+      if (searchInput !== searchQuery) {
+        setPage(1); // Volta pra pág 1 só se a busca realmente mudou
+      }
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchInput, searchQuery]);
+
+  const fetchOrders = useCallback(async (currentPage: number, currentFilter: string, currentSearch: string) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
         page: String(currentPage),
         limit: String(PAGE_SIZE),
         status: currentFilter,
+        ...(currentSearch.trim() ? { search: currentSearch.trim() } : {}),
       });
       const res = await fetch(`/api/admin/orders?${params}`);
       const data = await res.json();
@@ -57,8 +72,8 @@ export default function AdminOrdersPage() {
   }, []);
 
   useEffect(() => {
-    fetchOrders(page, filter);
-  }, [page, filter, fetchOrders]);
+    fetchOrders(page, filter, searchQuery);
+  }, [page, filter, searchQuery, fetchOrders]);
 
   function handleFilterChange(newFilter: string) {
     setFilter(newFilter);
@@ -73,7 +88,7 @@ export default function AdminOrdersPage() {
         body: JSON.stringify({ id: orderId, status: newStatus }),
       });
       if (!res.ok) throw new Error("Erro ao atualizar");
-      fetchOrders(page, filter);
+      fetchOrders(page, filter, searchQuery);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Erro");
     }
@@ -93,6 +108,25 @@ export default function AdminOrdersPage() {
               <p className="text-sm text-zinc-500 mt-1">
                 {total} {total === 1 ? "pedido" : "pedidos"} no total
               </p>
+            )}
+          </div>
+          
+          {/* SEARCH BOX */}
+          <div className="relative max-w-xs w-full">
+            <input
+              type="text"
+              placeholder="Buscar por Nome ou ID Discord..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[var(--color-detroit-red)] focus:ring-1 focus:ring-[var(--color-detroit-red)] transition-all"
+            />
+            {searchInput && (
+              <button 
+                onClick={() => setSearchInput("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white"
+              >
+                ✕
+              </button>
             )}
           </div>
         </div>

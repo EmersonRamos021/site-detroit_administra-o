@@ -17,16 +17,32 @@ export async function GET(request: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20")));
   const statusFilter = searchParams.get("status") || "todos";
+  const search = searchParams.get("search") || "";
   const offset = (page - 1) * limit;
 
   // Monta cláusula WHERE
-  const whereClause = statusFilter !== "todos" ? "WHERE o.status = ?" : "";
-  const whereParams: string[] = statusFilter !== "todos" ? [statusFilter] : [];
+  let whereClause = "";
+  const whereParams: any[] = [];
+  const conditions = [];
+
+  if (statusFilter !== "todos") {
+    conditions.push("o.status = ?");
+    whereParams.push(statusFilter);
+  }
+
+  if (search.trim()) {
+    conditions.push("(u.discord_tag LIKE ? OR u.discord_id = ?)");
+    whereParams.push(`%${search.trim()}%`, search.trim());
+  }
+
+  if (conditions.length > 0) {
+    whereClause = "WHERE " + conditions.join(" AND ");
+  }
 
   // Conta total de pedidos (com filtro)
   // MySQL2 retorna COUNT como BigInt — usar Number() para converter
   const countResult = await query<{ total: string | number | bigint }>(
-    `SELECT COUNT(*) as total FROM orders o ${whereClause}`,
+    `SELECT COUNT(*) as total FROM orders o INNER JOIN users u ON o.user_id = u.id ${whereClause}`,
     whereParams
   );
   const total = Number(countResult[0]?.total ?? 0);
