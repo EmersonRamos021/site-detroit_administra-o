@@ -70,17 +70,30 @@ export async function PUT(request: Request) {
   return Response.json({ success: true });
 }
 
-// DELETE — Desativar produto (soft delete)
+// DELETE — Desativar produto (soft delete) ou Excluir permanente
 export async function DELETE(request: Request) {
   const session = await requirePermission("products");
   if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const body = await request.json();
-  const { id } = body;
+  const { id, hardDelete } = body;
 
   if (!id) return Response.json({ error: "ID é obrigatório." }, { status: 400 });
 
-  await query("UPDATE products SET active = 0 WHERE id = ?", [id]);
-  await logAdminAction(session.user.email!, "EXCLUIR_PRODUTO", `ID: ${id} desativado`);
-  return Response.json({ success: true });
+  if (hardDelete) {
+    try {
+      await query("DELETE FROM products WHERE id = ?", [id]);
+      await logAdminAction(session.user.email!, "EXCLUIR_PRODUTO", `ID: ${id} deletado permanentemente`);
+      return Response.json({ success: true });
+    } catch (error: any) {
+      if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.errno === 1451) {
+        return Response.json({ error: "Este produto não pode ser excluído permanentemente porque já possui pedidos associados no banco de dados. Ele deve apenas permanecer inativo." }, { status: 400 });
+      }
+      return Response.json({ error: "Erro ao excluir produto do banco de dados." }, { status: 500 });
+    }
+  } else {
+    await query("UPDATE products SET active = 0 WHERE id = ?", [id]);
+    await logAdminAction(session.user.email!, "DESATIVAR_PRODUTO", `ID: ${id} desativado`);
+    return Response.json({ success: true });
+  }
 }

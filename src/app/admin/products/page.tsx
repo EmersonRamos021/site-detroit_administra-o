@@ -155,16 +155,22 @@ export default function AdminProductsPage() {
     }
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm("Desativar este produto?")) return;
+  async function handleDelete(id: number, isActive: boolean) {
+    const isHardDelete = !isActive;
+    const msg = isHardDelete 
+      ? "Tem certeza que deseja EXCLUIR PERMANENTEMENTE este produto do banco de dados?\n\nAtenção: Se ele já tiver sido vendido para algum jogador, a exclusão será bloqueada para evitar quebrar o histórico de pedidos."
+      : "Tem certeza que deseja desativar este produto? Ele ficará invisível na loja para os jogadores.";
+      
+    if (!confirm(msg)) return;
 
     try {
       const res = await fetch("/api/admin/products", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, hardDelete: isHardDelete }),
       });
-      if (!res.ok) throw new Error("Erro ao desativar");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao excluir");
       fetchData();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Erro");
@@ -409,7 +415,7 @@ export default function AdminProductsPage() {
                     className="px-3 py-2 rounded-lg bg-zinc-800 text-zinc-300 text-xs font-bold hover:bg-zinc-700 transition-all">
                     Editar
                   </button>
-                  <button onClick={() => handleDelete(product.id)}
+                  <button onClick={() => handleDelete(product.id, product.active)}
                     className="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all">
                     {product.active ? "Desativar" : "Excluir"}
                   </button>
