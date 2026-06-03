@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
     "automodLogChannelId",
     "staffRoleId",
     "autoRoleId",
-    "linkFilterEnabled"
+    "linkFilterEnabled",
+    "memberCounterChannelId"
   ];
 
   for (const key of keysToUpdate) {

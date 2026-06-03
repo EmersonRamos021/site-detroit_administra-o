@@ -18,7 +18,8 @@ export default function BotSettingsPage() {
     automodLogChannelId: "",
     staffRoleId: "",
     autoRoleId: "",
-    linkFilterEnabled: "false"
+    linkFilterEnabled: "false",
+    memberCounterChannelId: ""
   });
 
   useEffect(() => {
@@ -186,6 +187,18 @@ export default function BotSettingsPage() {
                   onChange={e => setForm({...form, autoRoleId: e.target.value})} 
                   className={inputClass} 
                   placeholder="ID do Cargo"
+                />
+              </div>
+              
+              {/* Extras */}
+              <div className="md:col-span-2">
+                <label className={labelClass}>Canal do Contador de População</label>
+                <input 
+                  type="text" 
+                  value={form.memberCounterChannelId} 
+                  onChange={e => setForm({...form, memberCounterChannelId: e.target.value})} 
+                  className={inputClass} 
+                  placeholder="ID do Canal de Texto (Tópico) ou Voz (Nome) para mostrar o número de membros"
                 />
               </div>
             </div>
