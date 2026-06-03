@@ -42,7 +42,10 @@ export async function POST(request: NextRequest) {
     "staffRoleId",
     "autoRoleId",
     "linkFilterEnabled",
-    "memberCounterChannelId"
+    "memberCounterChannelId",
+    "badWords_list",
+    "antiFlood_maxMessages",
+    "antiFlood_timeWindow"
   ];
 
   for (const key of keysToUpdate) {

@@ -19,7 +19,10 @@ export default function BotSettingsPage() {
     staffRoleId: "",
     autoRoleId: "",
     linkFilterEnabled: "false",
-    memberCounterChannelId: ""
+    memberCounterChannelId: "",
+    badWords_list: '["fdp","vtnc","filho da puta","arrombado","vsf","vai se fuder","desgraça","corno","puta","vagabundo"]',
+    antiFlood_maxMessages: "5",
+    antiFlood_timeWindow: "4000"
   });
 
   useEffect(() => {
@@ -199,6 +202,48 @@ export default function BotSettingsPage() {
                   onChange={e => setForm({...form, memberCounterChannelId: e.target.value})} 
                   className={inputClass} 
                   placeholder="ID do Canal de Texto (Tópico) ou Voz (Nome) para mostrar o número de membros"
+                />
+              </div>
+            </div>
+
+            <hr className="border-white/5 my-6" />
+
+            <h3 className="text-xl font-bold text-white mb-4">Auto-Moderação</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label className={labelClass}>Palavras Bloqueadas (separadas por vírgula)</label>
+                <textarea 
+                  value={(() => {
+                    try { return JSON.parse(form.badWords_list || "[]").join(", "); }
+                    catch(e) { return ""; }
+                  })()}
+                  onChange={e => {
+                    const arr = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                    setForm({...form, badWords_list: JSON.stringify(arr)});
+                  }}
+                  className={`${inputClass} min-h-[100px] resize-y`} 
+                  placeholder="Ex: palavra1, palavra2, palavra3"
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>Anti-Flood: Limite de Mensagens</label>
+                <input 
+                  type="number" 
+                  value={form.antiFlood_maxMessages} 
+                  onChange={e => setForm({...form, antiFlood_maxMessages: e.target.value})} 
+                  className={inputClass} 
+                  placeholder="Ex: 5"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Anti-Flood: Janela de Tempo (segundos)</label>
+                <input 
+                  type="number" 
+                  value={Number(form.antiFlood_timeWindow) / 1000} 
+                  onChange={e => setForm({...form, antiFlood_timeWindow: String(Number(e.target.value) * 1000)})} 
+                  className={inputClass} 
+                  placeholder="Ex: 4"
                 />
               </div>
             </div>
