@@ -3,8 +3,10 @@ import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest, { params }: { params: { channel_name: string } }) {
-  const channelName = params.channel_name;
+export async function GET(request: NextRequest) {
+  // Extraindo do URL diretamente para evitar problemas com 'params' undefined no Next.js
+  const pathname = new URL(request.url).pathname;
+  const channelName = decodeURIComponent(pathname.split('/').pop() || "");
 
   try {
     const results = await query<{ transcript_html: string }>(
