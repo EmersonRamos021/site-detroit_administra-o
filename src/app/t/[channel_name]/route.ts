@@ -32,6 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: { channel_
       <div style="font-family: sans-serif; text-align: center; margin-top: 50px;">
         <h2>Erro interno do servidor</h2>
         <p>Não foi possível carregar a transcrição no momento.</p>
+        <pre style="background: #f4f4f4; padding: 10px; max-width: 600px; margin: 20px auto; text-align: left; overflow-x: auto;">${error instanceof Error ? error.message : String(error)}</pre>
       </div>
     `, { status: 500, headers: { "Content-Type": "text/html; charset=utf-8" } });
   }
