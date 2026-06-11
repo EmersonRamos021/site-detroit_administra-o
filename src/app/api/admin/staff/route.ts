@@ -96,7 +96,7 @@ export async function DELETE(req: Request) {
     const { id } = await req.json();
     
     // Bloquear deletar a si mesmo ou id = 1
-    if (id.toString() === session?.user?.id || id === 1) {
+    if (id === session?.user?.db_id || id === 1) {
       return NextResponse.json({ error: "Não é possível excluir esta conta" }, { status: 400 });
     }
 

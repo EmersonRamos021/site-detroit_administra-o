@@ -27,7 +27,13 @@ export default function BotSettingsPage() {
     memberCounterChannelId: "",
     badWords_list: '["fdp","vtnc","filho da puta","arrombado","vsf","vai se fuder","desgraça","corno","puta","vagabundo"]',
     antiFlood_maxMessages: "5",
-    antiFlood_timeWindow: "4000"
+    antiFlood_timeWindow: "4000",
+    mtaServerIp: "",
+    mtaServerPort: "",
+    mtaSocialStore: "",
+    mtaSocialInsta: "",
+    mtaSocialTiktok: "",
+    mtaSocialYoutube: ""
   });
 
   useEffect(() => {
@@ -46,6 +52,8 @@ export default function BotSettingsPage() {
       } finally {
         setLoading(false);
       }
+    }
+
     if (status === "unauthenticated") return router.push("/login");
     
     if (status === "authenticated") {
