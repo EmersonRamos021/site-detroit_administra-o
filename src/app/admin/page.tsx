@@ -147,7 +147,7 @@ export default async function AdminPage() {
           </Link>
           )}
           
-          {session.user.role === 'superadmin' && (
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('staff')) && (
           <Link
             href="/admin/staff"
             className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-purple-500/50 transition-all flex items-center gap-4"
@@ -177,7 +177,7 @@ export default async function AdminPage() {
           </Link>
           )}
 
-          {session.user.role === 'superadmin' && (
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('settings')) && (
           <Link
             href="/admin/bot-settings"
             className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-indigo-500/50 transition-all flex items-center gap-4"

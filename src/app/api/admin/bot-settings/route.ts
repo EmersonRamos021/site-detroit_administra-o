@@ -8,14 +8,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const session = await requirePermission("settings"); 
-  // Wait, does 'settings' permission exist? We can fallback to just auth check if needed, or create 'settings' permission.
-  // Actually, let's use 'owner' or checking if session exists since it's a critical setting.
-  // Let's use requirePermission("finance") or something high level, or simply check session.
-  // Wait, let's look at `requirePermission`. If we pass something they don't have, it rejects.
-  // I will check `requirePermission` behavior later, or just use `auth()` and check if email is admin.
   if (!session) {
-    const sessionAny = await auth();
-    if (!sessionAny) return Response.json({ error: "Não autorizado" }, { status: 403 });
+    return Response.json({ error: "Não autorizado" }, { status: 403 });
   }
 
   const rows = await query<{ key: string; value: string }>("SELECT `key`, `value` FROM settings");
@@ -28,8 +22,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const sessionAny = await auth();
-  if (!sessionAny) return Response.json({ error: "Não autorizado" }, { status: 403 });
+  const session = await requirePermission("settings");
+  if (!session) return Response.json({ error: "Não autorizado" }, { status: 403 });
 
   const body = await request.json();
   const keysToUpdate = [
@@ -63,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  await logAdminAction(sessionAny.user?.email || "Admin", "ATUALIZAR_BOT", "Atualizou configurações do Bot Discord");
+  await logAdminAction(session.user?.email || "Admin", "ATUALIZAR_BOT", "Atualizou configurações do Bot Discord");
 
   return Response.json({ success: true });
 }

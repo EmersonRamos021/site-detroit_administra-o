@@ -12,7 +12,9 @@ const PERMISSIONS_LIST = [
   { id: "finance", label: "Financeiro" },
   { id: "ids", label: "IDs In-Game" },
   { id: "tickets", label: "Tickets" },
-  { id: "logs", label: "Logs de Auditoria" }
+  { id: "logs", label: "Logs de Auditoria" },
+  { id: "staff", label: "Equipe Staff" },
+  { id: "settings", label: "Configuração do Bot" }
 ];
 
 export default function StaffPage() {
@@ -32,11 +34,11 @@ export default function StaffPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") return router.push("/login");
-    if (status === "authenticated" && session?.user?.role !== "superadmin") {
+    if (status === "authenticated" && session?.user?.role !== "superadmin" && !session?.user?.permissions?.includes("staff")) {
       router.push("/admin");
     }
     
-    if (status === "authenticated" && session?.user?.role === "superadmin") {
+    if (status === "authenticated" && (session?.user?.role === "superadmin" || session?.user?.permissions?.includes("staff"))) {
       fetchStaff();
     }
   }, [status, session, router]);

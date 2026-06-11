@@ -3,8 +3,13 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function BotSettingsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -41,9 +46,19 @@ export default function BotSettingsPage() {
       } finally {
         setLoading(false);
       }
+    if (status === "unauthenticated") return router.push("/login");
+    
+    if (status === "authenticated") {
+      const perms = session?.user?.permissions || [];
+      const hasAccess = session?.user?.role === "superadmin" || perms.includes("all") || perms.includes("settings");
+      
+      if (!hasAccess) {
+        router.push("/admin");
+      } else {
+        fetchSettings();
+      }
     }
-    fetchSettings();
-  }, []);
+  }, [status, session, router]);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();

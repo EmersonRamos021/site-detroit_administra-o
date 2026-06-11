@@ -6,7 +6,7 @@ import { logAdminAction } from "@/lib/logger";
 
 export async function GET() {
   const session = await auth();
-  if (session?.user?.role !== "superadmin") {
+  if (session?.user?.role !== "superadmin" && !session?.user?.permissions?.includes("staff")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -21,7 +21,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (session?.user?.role !== "superadmin") {
+  if (session?.user?.role !== "superadmin" && !session?.user?.permissions?.includes("staff")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   const session = await auth();
-  if (session?.user?.role !== "superadmin") {
+  if (session?.user?.role !== "superadmin" && !session?.user?.permissions?.includes("staff")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -88,7 +88,7 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   const session = await auth();
-  if (session?.user?.role !== "superadmin") {
+  if (session?.user?.role !== "superadmin" && !session?.user?.permissions?.includes("staff")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
