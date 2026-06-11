@@ -45,7 +45,13 @@ export async function POST(request: NextRequest) {
     "memberCounterChannelId",
     "badWords_list",
     "antiFlood_maxMessages",
-    "antiFlood_timeWindow"
+    "antiFlood_timeWindow",
+    "mtaServerIp",
+    "mtaServerPort",
+    "mtaSocialStore",
+    "mtaSocialInsta",
+    "mtaSocialTiktok",
+    "mtaSocialYoutube"
   ];
 
   for (const key of keysToUpdate) {

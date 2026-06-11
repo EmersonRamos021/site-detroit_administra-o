@@ -250,6 +250,73 @@ export default function BotSettingsPage() {
 
             <hr className="border-white/5 my-6" />
 
+            <h3 className="text-xl font-bold text-white mb-4">Status do Servidor MTA</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className={labelClass}>IP do Servidor (MTA)</label>
+                <input 
+                  type="text" 
+                  value={form.mtaServerIp || ""} 
+                  onChange={e => setForm({...form, mtaServerIp: e.target.value})} 
+                  className={inputClass} 
+                  placeholder="Ex: jogar.complexorp.com.br"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Porta (MTA)</label>
+                <input 
+                  type="text" 
+                  value={form.mtaServerPort || ""} 
+                  onChange={e => setForm({...form, mtaServerPort: e.target.value})} 
+                  className={inputClass} 
+                  placeholder="Padrão: 22003"
+                />
+              </div>
+              
+              <div>
+                <label className={labelClass}>Link da Loja</label>
+                <input 
+                  type="text" 
+                  value={form.mtaSocialStore || ""} 
+                  onChange={e => setForm({...form, mtaSocialStore: e.target.value})} 
+                  className={inputClass} 
+                  placeholder="https://..."
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Link do Instagram</label>
+                <input 
+                  type="text" 
+                  value={form.mtaSocialInsta || ""} 
+                  onChange={e => setForm({...form, mtaSocialInsta: e.target.value})} 
+                  className={inputClass} 
+                  placeholder="https://instagram.com/..."
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Link do TikTok</label>
+                <input 
+                  type="text" 
+                  value={form.mtaSocialTiktok || ""} 
+                  onChange={e => setForm({...form, mtaSocialTiktok: e.target.value})} 
+                  className={inputClass} 
+                  placeholder="https://tiktok.com/..."
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Link do YouTube</label>
+                <input 
+                  type="text" 
+                  value={form.mtaSocialYoutube || ""} 
+                  onChange={e => setForm({...form, mtaSocialYoutube: e.target.value})} 
+                  className={inputClass} 
+                  placeholder="https://youtube.com/..."
+                />
+              </div>
+            </div>
+
+            <hr className="border-white/5 my-6" />
+
             {/* Toggles */}
             <div className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-xl border border-white/5">
               <div>
