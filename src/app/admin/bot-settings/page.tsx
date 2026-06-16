@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -13,6 +13,10 @@ export default function BotSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     guildId: "",
@@ -33,7 +37,8 @@ export default function BotSettingsPage() {
     mtaSocialStore: "",
     mtaSocialInsta: "",
     mtaSocialTiktok: "",
-    mtaSocialYoutube: ""
+    mtaSocialYoutube: "",
+    botAvatarUrl: ""
   });
 
   useEffect(() => {
@@ -91,6 +96,35 @@ export default function BotSettingsPage() {
     }
   }
 
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAvatar(true);
+    setAvatarError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Erro no upload");
+
+      setForm(prev => ({ ...prev, botAvatarUrl: data.url }));
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : "Erro no upload");
+    } finally {
+      setUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  }
+
   const inputClass = "w-full px-4 py-3 rounded-xl bg-zinc-800 border border-white/5 text-white focus:border-[var(--color-detroit-red)] focus:outline-none transition-colors";
   const labelClass = "block text-xs text-zinc-500 uppercase tracking-wider mb-2 font-semibold";
 
@@ -128,6 +162,50 @@ export default function BotSettingsPage() {
             className="space-y-6 bg-zinc-900 p-6 md:p-8 rounded-2xl border border-white/5"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Avatar do Bot */}
+              <div className="md:col-span-2 bg-zinc-800/50 p-6 rounded-xl border border-white/5 flex flex-col md:flex-row gap-6 items-center mb-2">
+                <div className="w-24 h-24 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {form.botAvatarUrl ? (
+                    <img src={form.botAvatarUrl} alt="Bot Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-4xl">🤖</span>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-white mb-1">Foto de Perfil do Bot</h3>
+                  <p className="text-sm text-zinc-500 mb-4">A imagem será atualizada automaticamente no Discord. Formatos recomendados: PNG ou JPG.</p>
+                  
+                  <input 
+                    type="file" 
+                    accept="image/png, image/jpeg, image/gif"
+                    className="hidden"
+                    ref={avatarInputRef}
+                    onChange={handleAvatarUpload}
+                  />
+                  <div className="flex items-center gap-3">
+                    <button 
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={uploadingAvatar}
+                      className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                    >
+                      {uploadingAvatar ? "Enviando..." : "Escolher Imagem"}
+                    </button>
+                    {form.botAvatarUrl && (
+                      <button 
+                        type="button"
+                        onClick={() => setForm({...form, botAvatarUrl: ""})}
+                        className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors"
+                      >
+                        Remover
+                      </button>
+                    )}
+                  </div>
+                  {avatarError && <p className="text-red-400 text-xs mt-2">{avatarError}</p>}
+                </div>
+              </div>
+
               {/* Guild ID */}
               <div className="md:col-span-2">
                 <label className={labelClass}>ID do Servidor (Guild ID)</label>

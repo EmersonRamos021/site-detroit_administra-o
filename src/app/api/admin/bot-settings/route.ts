@@ -45,7 +45,8 @@ export async function POST(request: NextRequest) {
     "mtaSocialStore",
     "mtaSocialInsta",
     "mtaSocialTiktok",
-    "mtaSocialYoutube"
+    "mtaSocialYoutube",
+    "botAvatarUrl"
   ];
 
   for (const key of keysToUpdate) {
