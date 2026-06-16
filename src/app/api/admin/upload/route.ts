@@ -10,13 +10,7 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE_MB = 5;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
-async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.discord_id || session.user.role !== "admin") {
-    return null;
-  }
-  return session;
-}
+import { requirePermission } from "@/lib/auth-check";
 
 function sanitizeFilename(name: string): string {
   return name
@@ -27,7 +21,7 @@ function sanitizeFilename(name: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await requireAdmin();
+  const session = (await requirePermission("products")) || (await requirePermission("settings"));
   if (!session) {
     return Response.json({ error: "Não autorizado" }, { status: 403 });
   }
