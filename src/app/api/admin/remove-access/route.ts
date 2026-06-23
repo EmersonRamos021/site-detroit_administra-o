@@ -1,7 +1,12 @@
 import { query } from "@/lib/db";
+import { requirePermission } from "@/lib/auth-check";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  const session = await requirePermission("superadmin");
+  if (!session) {
+    return Response.json({ error: "Não autorizado" }, { status: 403 });
+  }
   try {
     const searchParams = new URL(request.url).searchParams;
     const email = searchParams.get("email");
