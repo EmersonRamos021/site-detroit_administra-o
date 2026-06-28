@@ -21,6 +21,10 @@ export default function BotSettingsPage() {
   const [form, setForm] = useState({
     guildId: "",
     ticketCategoryId: "",
+    ticketCategoryCompras: "",
+    ticketCategorySuporte: "",
+    ticketCategoryDenuncia: "",
+    ticketCategoryRevisao: "",
     permanentCategoryId: "",
     logChannelId: "",
     denunciasChannelId: "",
@@ -218,17 +222,72 @@ export default function BotSettingsPage() {
                 />
               </div>
 
-              {/* Categorias */}
-              <div>
-                <label className={labelClass}>Categoria de Tickets</label>
+              {/* Categoria Pai de Tickets (Genérica) */}
+              <div className="md:col-span-2">
+                <label className={labelClass}>ID da Categoria Genérica (Fallback)</label>
                 <input 
                   type="text" 
-                  value={form.ticketCategoryId} 
-                  onChange={e => setForm({...form, ticketCategoryId: e.target.value})} 
-                  className={inputClass} 
-                  placeholder="ID da Categoria"
+                  className={inputClass}
+                  value={form.ticketCategoryId}
+                  onChange={e => setForm({...form, ticketCategoryId: e.target.value})}
+                  placeholder="Ex: 123456789012345678"
                 />
+                <p className="text-xs text-zinc-500 mt-2">Será usada caso as categorias específicas abaixo não sejam preenchidas.</p>
               </div>
+
+              {/* Categorias Específicas de Tickets */}
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-800/30 p-4 rounded-xl border border-white/5 mt-2">
+                <div className="md:col-span-2">
+                  <h4 className="text-sm font-bold text-white mb-2">Categorias Específicas</h4>
+                  <p className="text-xs text-zinc-400 mb-4">Separe os tickets para manter seu servidor do Discord organizado.</p>
+                </div>
+                
+                <div>
+                  <label className={labelClass}>Categoria de Compras (💰)</label>
+                  <input 
+                    type="text" 
+                    className={inputClass}
+                    value={form.ticketCategoryCompras}
+                    onChange={e => setForm({...form, ticketCategoryCompras: e.target.value})}
+                    placeholder="ID da Categoria"
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass}>Categoria de Suporte (🔧)</label>
+                  <input 
+                    type="text" 
+                    className={inputClass}
+                    value={form.ticketCategorySuporte}
+                    onChange={e => setForm({...form, ticketCategorySuporte: e.target.value})}
+                    placeholder="ID da Categoria"
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass}>Categoria de Denúncias (📢)</label>
+                  <input 
+                    type="text" 
+                    className={inputClass}
+                    value={form.ticketCategoryDenuncia}
+                    onChange={e => setForm({...form, ticketCategoryDenuncia: e.target.value})}
+                    placeholder="ID da Categoria"
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass}>Categoria de Revisões (⚠️)</label>
+                  <input 
+                    type="text" 
+                    className={inputClass}
+                    value={form.ticketCategoryRevisao}
+                    onChange={e => setForm({...form, ticketCategoryRevisao: e.target.value})}
+                    placeholder="ID da Categoria"
+                  />
+                </div>
+              </div>
+
+              {/* Categoria de Tickets Permanentes */}
               <div>
                 <label className={labelClass}>Categoria Permanente</label>
                 <input 

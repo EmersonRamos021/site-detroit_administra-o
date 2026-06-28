@@ -29,6 +29,10 @@ export async function POST(request: NextRequest) {
   const keysToUpdate = [
     "guildId",
     "ticketCategoryId",
+    "ticketCategoryCompras",
+    "ticketCategorySuporte",
+    "ticketCategoryDenuncia",
+    "ticketCategoryRevisao",
     "permanentCategoryId",
     "logChannelId",
     "denunciasChannelId",
