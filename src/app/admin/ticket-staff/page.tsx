@@ -212,7 +212,7 @@ export default function TicketStaffPage() {
                     type="text"
                     required
                     value={discordId}
-                    onChange={(e) => setDiscordId(e.target.value.replace(/\\D/g, ''))}
+                    onChange={(e) => setDiscordId(e.target.value.replace(/\D/g, ''))}
                     className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-[var(--color-detroit-red)] transition-all"
                     placeholder="Ex: 303184113639358464"
                   />
@@ -225,17 +225,18 @@ export default function TicketStaffPage() {
                     {TICKET_CATEGORIES.map(cat => (
                       <label 
                         key={cat.id}
-                        className={\`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all \${
+                        onClick={() => toggleCat(cat.id)}
+                        className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                           selectedCats.includes(cat.id) 
                             ? "bg-[var(--color-detroit-red)]/10 border-[var(--color-detroit-red)]/50" 
                             : "bg-black/30 border-white/5 hover:border-white/10"
-                        }\`}
+                        }`}
                       >
-                        <div className={\`w-5 h-5 rounded border flex items-center justify-center transition-all \${
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${
                           selectedCats.includes(cat.id)
                             ? "bg-[var(--color-detroit-red)] border-[var(--color-detroit-red)]"
                             : "border-zinc-600"
-                        }\`}>
+                        }`}>
                           {selectedCats.includes(cat.id) && <CheckCircle weight="bold" className="text-white w-4 h-4" />}
                         </div>
                         <span className="text-sm font-medium text-white">{cat.label}</span>

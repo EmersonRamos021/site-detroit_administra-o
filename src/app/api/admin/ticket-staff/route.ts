@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       [discord_id, categoriesJson]
     );
 
-    await logAdminAction(session.user.email!, "CONFIGURAR_TICKET_STAFF", \`Discord ID: \${discord_id}, Categorias: \${categoriesJson}\`);
+    await logAdminAction(session.user.email!, "CONFIGURAR_TICKET_STAFF", `Discord ID: ${discord_id}, Categorias: ${categoriesJson}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -76,7 +76,7 @@ export async function DELETE(req: Request) {
 
     await query("DELETE FROM ticket_staff WHERE id = ?", [id]);
 
-    await logAdminAction(session.user.email!, "DELETAR_TICKET_STAFF", \`ID: \${id}\`);
+    await logAdminAction(session.user.email!, "DELETAR_TICKET_STAFF", `ID: ${id}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
