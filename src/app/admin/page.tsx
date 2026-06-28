@@ -177,6 +177,21 @@ export default async function AdminPage() {
           </Link>
           )}
 
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('staff')) && (
+          <Link
+            href="/admin/ticket-staff"
+            className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-[var(--color-detroit-red)]/50 transition-all flex items-center gap-4"
+          >
+            <div className="w-12 h-12 rounded-xl bg-[var(--color-detroit-red)]/10 flex items-center justify-center text-[var(--color-detroit-red)]">
+              <ChatTeardropText size={24} weight="fill" />
+            </div>
+            <div>
+              <p className="font-bold text-white">Staff de Tickets</p>
+              <p className="text-sm text-zinc-500">Defina quem atende cada ticket</p>
+            </div>
+          </Link>
+          )}
+
           {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('settings')) && (
           <Link
             href="/admin/bot-settings"
