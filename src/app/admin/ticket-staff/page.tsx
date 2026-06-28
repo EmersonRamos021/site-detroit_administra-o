@@ -20,6 +20,7 @@ export default function TicketStaffPage() {
   const [loading, setLoading] = useState(true);
   
   const [discordId, setDiscordId] = useState("");
+  const [name, setName] = useState("");
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
@@ -66,7 +67,7 @@ export default function TicketStaffPage() {
       const res = await fetch("/api/admin/ticket-staff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ discord_id: discordId, categories: selectedCats }),
+        body: JSON.stringify({ discord_id: discordId, name, categories: selectedCats }),
       });
 
       const data = await res.json();
@@ -79,6 +80,7 @@ export default function TicketStaffPage() {
 
       setSuccess(true);
       setDiscordId("");
+      setName("");
       setSelectedCats([]);
       fetchStaff();
       
@@ -108,6 +110,7 @@ export default function TicketStaffPage() {
 
   function handleEdit(member: any) {
     setDiscordId(member.discord_id);
+    setName(member.name || "");
     let cats = [];
     try {
       cats = typeof member.categories === 'string' ? JSON.parse(member.categories) : member.categories;
@@ -157,7 +160,8 @@ export default function TicketStaffPage() {
                   <div key={member.id} className="p-5 bg-zinc-900/40 border border-white/5 rounded-2xl flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="font-mono text-white bg-black/50 px-2 py-1 rounded text-sm border border-white/10">ID: {member.discord_id}</span>
+                        {member.name && <span className="font-bold text-white text-lg">{member.name}</span>}
+                        <span className="font-mono text-zinc-400 bg-black/50 px-2 py-1 rounded text-xs border border-white/10">ID: {member.discord_id}</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {cats && cats.length > 0 ? (
@@ -206,6 +210,18 @@ export default function TicketStaffPage() {
               </h2>
 
               <form onSubmit={handleSave} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Nome de Identificação</label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-[var(--color-detroit-red)] transition-all"
+                    placeholder="Ex: Joãozinho (Vendas)"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-2">ID do Discord do Staff</label>
                   <input
