@@ -159,9 +159,20 @@ export default function TicketStaffPage() {
                 return (
                   <div key={member.id} className="p-5 bg-zinc-900/40 border border-white/5 rounded-2xl flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                     <div>
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
                         {member.name && <span className="font-bold text-white text-lg">{member.name}</span>}
                         <span className="font-mono text-zinc-400 bg-black/50 px-2 py-1 rounded text-xs border border-white/10">ID: {member.discord_id}</span>
+                        
+                        <div className="flex items-center gap-2 ml-2">
+                          <span className="text-xs bg-zinc-800 text-zinc-300 px-2 py-1 rounded-full border border-white/5 flex items-center gap-1">
+                            <Ticket size={12} weight="fill" />
+                            {member.total_tickets || 0} Atendimentos
+                          </span>
+                          
+                          <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full border border-yellow-500/20 flex items-center gap-1 font-bold">
+                            ⭐ {member.average_rating ? Number(member.average_rating).toFixed(1) : "N/A"}
+                          </span>
+                        </div>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {cats && cats.length > 0 ? (

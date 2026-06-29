@@ -33,7 +33,21 @@ export async function GET() {
 
   try {
     await ensureTableExists();
-    const staff = await query("SELECT id, name, discord_id, categories FROM ticket_staff ORDER BY id ASC");
+    
+    const staff = await query(`
+      SELECT 
+        ts.id, 
+        ts.name, 
+        ts.discord_id, 
+        ts.categories,
+        COUNT(t.id) as total_tickets,
+        AVG(t.rating) as average_rating
+      FROM ticket_staff ts
+      LEFT JOIN tickets t ON ts.discord_id = t.closed_by_id
+      GROUP BY ts.id, ts.name, ts.discord_id, ts.categories
+      ORDER BY ts.id ASC
+    `);
+    
     return NextResponse.json(staff);
   } catch (error) {
     console.error(error);

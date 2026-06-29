@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const keysToUpdate = [
     "guildId",
+    "reviewChannelId",
     "ticketCategoryId",
     "ticketCategoryCompras",
     "ticketCategorySuporte",

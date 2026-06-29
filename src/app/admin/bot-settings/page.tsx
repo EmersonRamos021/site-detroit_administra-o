@@ -20,6 +20,7 @@ export default function BotSettingsPage() {
 
   const [form, setForm] = useState({
     guildId: "",
+    reviewChannelId: "",
     ticketCategoryId: "",
     ticketCategoryCompras: "",
     ticketCategorySuporte: "",
@@ -237,7 +238,21 @@ export default function BotSettingsPage() {
 
               {/* Categorias Específicas de Tickets */}
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-800/30 p-4 rounded-xl border border-white/5 mt-2">
+                
+                {/* CANAL DE AVALIAÇÕES */}
                 <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Canal de Avaliações de Tickets (ID)</label>
+                  <input
+                    type="text"
+                    value={form.reviewChannelId}
+                    onChange={(e) => setForm({...form, reviewChannelId: e.target.value.replace(/\D/g, '')})}
+                    className={inputClass}
+                    placeholder="Ex: 123456789012345678"
+                  />
+                  <p className="text-xs text-zinc-500 mt-2">ID do canal onde as avaliações dos tickets serão postadas.</p>
+                </div>
+
+                <div className="md:col-span-2 pt-4 border-t border-white/5">
                   <h4 className="text-sm font-bold text-white mb-2">Categorias Específicas</h4>
                   <p className="text-xs text-zinc-400 mb-4">Separe os tickets para manter seu servidor do Discord organizado.</p>
                 </div>
