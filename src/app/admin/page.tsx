@@ -177,7 +177,7 @@ export default async function AdminPage() {
           </Link>
           )}
 
-          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('staff')) && (
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('ticket_staff')) && (
           <Link
             href="/admin/ticket-staff"
             className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-[var(--color-detroit-red)]/50 transition-all flex items-center gap-4"

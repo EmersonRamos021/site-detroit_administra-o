@@ -14,6 +14,7 @@ const PERMISSIONS_LIST = [
   { id: "tickets", label: "Tickets" },
   { id: "logs", label: "Logs de Auditoria" },
   { id: "staff", label: "Equipe Staff" },
+  { id: "ticket_staff", label: "Equipe de Tickets" },
   { id: "settings", label: "Configuração do Bot" }
 ];
 

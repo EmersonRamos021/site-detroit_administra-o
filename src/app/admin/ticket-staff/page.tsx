@@ -28,11 +28,11 @@ export default function TicketStaffPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") return router.push("/login");
-    if (status === "authenticated" && session?.user?.role !== "superadmin" && !session?.user?.permissions?.includes("staff")) {
+    if (status === "authenticated" && session?.user?.role !== "superadmin" && !session?.user?.permissions?.includes("ticket_staff")) {
       router.push("/admin");
     }
     
-    if (status === "authenticated" && (session?.user?.role === "superadmin" || session?.user?.permissions?.includes("staff"))) {
+    if (status === "authenticated" && (session?.user?.role === "superadmin" || session?.user?.permissions?.includes("ticket_staff"))) {
       fetchStaff();
     }
   }, [status, session, router]);
