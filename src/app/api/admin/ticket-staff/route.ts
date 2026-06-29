@@ -43,7 +43,7 @@ export async function GET() {
         COUNT(t.id) as total_tickets,
         AVG(t.rating) as average_rating
       FROM ticket_staff ts
-      LEFT JOIN tickets t ON ts.discord_id = t.closed_by_id
+      LEFT JOIN tickets t ON ts.discord_id COLLATE utf8mb4_unicode_ci = t.closed_by_id COLLATE utf8mb4_unicode_ci
       GROUP BY ts.id, ts.name, ts.discord_id, ts.categories
       ORDER BY ts.id ASC
     `);
