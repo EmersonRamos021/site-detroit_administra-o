@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
     "autoRoleId",
     "linkFilterEnabled",
     "memberCounterChannelId",
+    "supportVoiceChannelId",
     "badWords_list",
     "antiFlood_maxMessages",
     "antiFlood_timeWindow",
