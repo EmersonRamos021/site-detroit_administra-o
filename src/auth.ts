@@ -58,11 +58,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
+      // Quando loga pela primeira vez, 'user' está disponível
       if (user) {
         token.id = user.id;
         token.role = (user as any).role || "staff";
         token.permissions = (user as any).permissions || [];
         token.email = user.email;
+      }
+
+      // Buscar os dados atualizados do banco sempre que o token for acessado (sessão real-time)
+      if (token.email) {
+        try {
+          const dbCheck = await query<DbAdmin>("SELECT role, permissions FROM admins WHERE email = ?", [token.email as string]);
+          if (dbCheck.length > 0) {
+            token.role = dbCheck[0].role;
+            token.permissions = typeof dbCheck[0].permissions === 'string' 
+              ? JSON.parse(dbCheck[0].permissions) 
+              : (dbCheck[0].permissions || []);
+          }
+        } catch (error) {
+          // Em caso de falha de conexão, ignora para não derrubar a sessão
+        }
       }
       return token;
     },
