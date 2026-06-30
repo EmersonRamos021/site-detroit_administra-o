@@ -34,6 +34,7 @@ export default function BotSettingsPage() {
     autoRoleId: "",
     linkFilterEnabled: "false",
     memberCounterChannelId: "",
+    supportVoiceChannelId: "",
     badWords_list: '["fdp","vtnc","filho da puta","arrombado","vsf","vai se fuder","desgraça","corno","puta","vagabundo"]',
     antiFlood_maxMessages: "5",
     antiFlood_timeWindow: "4000",
@@ -326,7 +327,17 @@ export default function BotSettingsPage() {
                 />
               </div>
               <div>
-                <label className={labelClass}>Canal de Denúncias</label>
+                <label className="block text-sm text-zinc-400 mb-1">ID da Call: Aguardando Suporte</label>
+                <input
+                  type="text"
+                  value={form.supportVoiceChannelId}
+                  onChange={(e) => setForm({ ...form, supportVoiceChannelId: e.target.value })}
+                  className="w-full bg-black/50 border border-white/10 rounded-xl h-12 px-4 text-white focus:outline-none focus:border-[var(--color-detroit-red)] transition-colors"
+                  placeholder="Ex: 123456789012345678"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Canal de Denúncias (Mensagens)</label>
                 <input 
                   type="text" 
                   value={form.denunciasChannelId} 
