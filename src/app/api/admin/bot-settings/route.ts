@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
     "ticketCategoryRevisao",
     "permanentCategoryId",
     "logChannelId",
+    "logChatChannelId",
+    "logVoiceChannelId",
     "denunciasChannelId",
     "automodLogChannelId",
     "staffRoleId",

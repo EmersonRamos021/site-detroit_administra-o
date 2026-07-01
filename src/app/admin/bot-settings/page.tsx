@@ -28,6 +28,8 @@ export default function BotSettingsPage() {
     ticketCategoryRevisao: "",
     permanentCategoryId: "",
     logChannelId: "",
+    logChatChannelId: "",
+    logVoiceChannelId: "",
     denunciasChannelId: "",
     automodLogChannelId: "",
     staffRoleId: "",
@@ -324,6 +326,26 @@ export default function BotSettingsPage() {
                   onChange={e => setForm({...form, logChannelId: e.target.value})} 
                   className={inputClass} 
                   placeholder="ID do Canal"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Canal de Auditoria (Chat e Msg)</label>
+                <input 
+                  type="text" 
+                  value={form.logChatChannelId} 
+                  onChange={e => setForm({...form, logChatChannelId: e.target.value})} 
+                  className={inputClass} 
+                  placeholder="Ex: 1234567890"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Canal de Auditoria (Call de Voz)</label>
+                <input 
+                  type="text" 
+                  value={form.logVoiceChannelId} 
+                  onChange={e => setForm({...form, logVoiceChannelId: e.target.value})} 
+                  className={inputClass} 
+                  placeholder="Ex: 0987654321"
                 />
               </div>
               <div>
