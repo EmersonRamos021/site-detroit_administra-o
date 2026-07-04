@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
+import { getPool } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +31,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "order_id inválido" }, { status: 400 });
     }
 
-    const result = await query<any>(
+    const pool = getPool();
+    const [result]: any = await pool.execute(
       `UPDATE orders
        SET status = 'entregue', updated_at = NOW()
        WHERE id = ? AND status = 'pago'`,
