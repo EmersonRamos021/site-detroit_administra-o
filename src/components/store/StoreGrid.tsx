@@ -58,7 +58,25 @@ export function StoreGrid() {
         if (!res.ok) throw new Error("Erro ao carregar produtos");
         
         const data = await res.json();
-        setProducts(data.products);
+        const fetchedProducts = data.products;
+        
+        // Organiza a ordem dos produtos
+        const categoryOrder = ["vips", "coins", "veiculos", "planos", "drops"];
+        fetchedProducts.sort((a: Product, b: Product) => {
+          const rankA = categoryOrder.indexOf(a.categorySlug) === -1 ? 999 : categoryOrder.indexOf(a.categorySlug);
+          const rankB = categoryOrder.indexOf(b.categorySlug) === -1 ? 999 : categoryOrder.indexOf(b.categorySlug);
+          
+          // 1. Ordernar por categoria
+          if (rankA !== rankB) return rankA - rankB;
+          
+          // 2. Ordenar por preço (menor para o maior)
+          if (a.price !== b.price) return a.price - b.price;
+          
+          // 3. Desempate por título
+          return a.title.localeCompare(b.title);
+        });
+        
+        setProducts(fetchedProducts);
         
         // Categorias só carregam uma vez
         if (categories.length === 0 && data.categories) {
