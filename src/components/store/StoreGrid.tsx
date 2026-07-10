@@ -41,7 +41,7 @@ const getCategoryIcon = (slug: string) => {
 };
 
 export function StoreGrid() {
-  const [activeCategory, setActiveCategory] = useState("todos");
+  const [activeCategory, setActiveCategory] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +62,11 @@ export function StoreGrid() {
         
         // Categorias só carregam uma vez
         if (categories.length === 0 && data.categories) {
-          setCategories(data.categories);
+          const validCategories = data.categories.filter((c: Category) => c.slug !== "drops" && c.slug !== "todos");
+          setCategories(validCategories);
+          if (activeCategory === "" && validCategories.length > 0) {
+            setActiveCategory(validCategories[0].slug);
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro desconhecido");
@@ -75,10 +79,7 @@ export function StoreGrid() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCategory]);
 
-  const allCategories = [
-    { id: 0, name: "Todos", slug: "todos", icon: null },
-    ...categories,
-  ];
+  const allCategories = categories;
 
   return (
     <section id="store" className="py-32 px-6 relative max-w-[1400px] mx-auto w-full">
