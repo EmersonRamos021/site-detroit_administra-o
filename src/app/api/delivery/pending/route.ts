@@ -28,7 +28,7 @@ export async function GET(req: Request) {
 
     for (const order of orders) {
       const items = await query<any>(
-        `SELECT oi.quantity, p.in_game_command 
+        `SELECT oi.quantity, oi.car_id, p.in_game_command 
          FROM order_items oi
          INNER JOIN products p ON oi.product_id = p.id
          WHERE oi.order_id = ? AND p.in_game_command IS NOT NULL AND p.in_game_command != ''`,
@@ -42,7 +42,8 @@ export async function GET(req: Request) {
           game_id: order.game_id,
           items: items.map((i: any) => ({
             command: i.in_game_command,
-            quantity: i.quantity
+            quantity: i.quantity,
+            car_id: i.car_id
           }))
         });
       }
