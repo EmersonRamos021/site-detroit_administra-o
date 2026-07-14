@@ -24,7 +24,6 @@ export default function IdsManagerPage() {
   const ITEMS_PER_PAGE = 500;
   const MAX_ID = 9999;
   const MIN_ID = 10;
-  const totalPages = Math.ceil((MAX_ID - MIN_ID + 1) / ITEMS_PER_PAGE);
 
   useEffect(() => {
     fetchIds();
@@ -91,25 +90,27 @@ export default function IdsManagerPage() {
     return { sold, reserved };
   }, [idsData]);
 
-  const displayIds = useMemo(() => {
+  const { displayIds, totalPages } = useMemo(() => {
     if (search) {
       const sid = parseInt(search);
       if (!isNaN(sid) && sid >= 10 && sid <= 9999) {
-        return [sid];
+        return { displayIds: [sid], totalPages: 1 };
       }
-      return [];
+      return { displayIds: [], totalPages: 1 };
     }
 
-    const start = MIN_ID + (page * ITEMS_PER_PAGE);
-    const end = Math.min(start + ITEMS_PER_PAGE - 1, MAX_ID);
-    
-    const arr = [];
-    for (let i = start; i <= end; i++) {
-        const s = idsData[i] || "disponivel";
-        if (filter !== "all" && s !== filter) continue;
-        arr.push(i);
+    const matchingIds: number[] = [];
+    for (let i = MIN_ID; i <= MAX_ID; i++) {
+      const s = idsData[i] || "disponivel";
+      if (filter !== "all" && s !== filter) continue;
+      matchingIds.push(i);
     }
-    return arr;
+
+    const pages = Math.ceil(matchingIds.length / ITEMS_PER_PAGE) || 1;
+    const startIdx = page * ITEMS_PER_PAGE;
+    const sliced = matchingIds.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+    return { displayIds: sliced, totalPages: pages };
   }, [page, search, filter, idsData]);
 
 
@@ -160,7 +161,10 @@ export default function IdsManagerPage() {
 
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value as any)}
+            onChange={(e) => {
+              setFilter(e.target.value as any);
+              setPage(0);
+            }}
             className="bg-black/50 border border-white/10 rounded-xl h-10 px-4 text-white focus:outline-none"
           >
             <option value="all">Ver Todos</option>
@@ -183,7 +187,7 @@ export default function IdsManagerPage() {
         </div>
 
         {/* PAGINATION */}
-        {!search && filter === "all" && (
+        {!search && totalPages > 1 && (
           <div className="flex gap-2 flex-wrap items-center justify-center mb-6">
             <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="px-4 py-2 bg-zinc-800 rounded disabled:opacity-50 text-white">&lt;</button>
             <span className="text-zinc-400 text-sm">Página {page + 1} de {totalPages}</span>
