@@ -11,12 +11,29 @@ interface DbId {
 // Inicializador da tabela
 async function ensureTable() {
   await query(`
-    CREATE TABLE IF NOT EXISTS game_ids (
-      game_id INT PRIMARY KEY,
-      status ENUM('reservado', 'vendido', 'indisponivel') NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+      CREATE TABLE IF NOT EXISTS game_ids (
+        game_id INT PRIMARY KEY,
+        status ENUM('reservado', 'vendido', 'indisponivel') NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS admin_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        action VARCHAR(255) NOT NULL,
+        details TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE TABLE IF NOT EXISTS rules (
+        id VARCHAR(255) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        html LONGTEXT NOT NULL,
+        order_index INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      );
+    `);
+
   // Migração segura para adicionar o status vendido caso a tabela já exista
   try {
     await query(`ALTER TABLE game_ids MODIFY COLUMN status ENUM('reservado', 'vendido', 'indisponivel') NOT NULL;`);

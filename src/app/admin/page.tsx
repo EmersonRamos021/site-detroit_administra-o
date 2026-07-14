@@ -117,6 +117,21 @@ export default async function AdminPage() {
           </Link>
           )}
 
+          {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('rules')) && (
+          <Link
+            href="/admin/regras"
+            className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-purple-500/50 transition-all flex items-center gap-4"
+          >
+            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+              <ListDashes size={24} weight="fill" />
+            </div>
+            <div>
+              <p className="font-bold text-white">Gerenciar Regras</p>
+              <p className="text-sm text-zinc-500">Editar regulamento do site</p>
+            </div>
+          </Link>
+          )}
+
           {(session.user.role === 'superadmin' || (session.user.permissions || []).includes('finance')) && (
           <Link
             href="/admin/finance"
