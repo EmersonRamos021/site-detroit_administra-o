@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Edit2, Plus, Trash2, X, Save, GripVertical } from "lucide-react";
+import { PencilSimple, Plus, Trash, X, FloppyDisk, DotsSixVertical } from "@phosphor-icons/react";
 
 interface Rule {
   id: string;
@@ -232,7 +232,7 @@ export default function AdminRulesPage() {
                   <>Salvando...</>
                 ) : (
                   <>
-                    <Save className="w-4 h-4" />
+                    <FloppyDisk className="w-4 h-4" weight="bold" />
                     Salvar Regra
                   </>
                 )}
@@ -252,7 +252,7 @@ export default function AdminRulesPage() {
                 <div key={rule.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors group">
                   <div className="flex items-center gap-4">
                     <div className="cursor-grab text-zinc-600 hover:text-zinc-400">
-                      <GripVertical className="w-5 h-5" />
+                      <DotsSixVertical className="w-5 h-5" weight="bold" />
                     </div>
                     <div>
                       <h3 className="text-white font-medium">{rule.title}</h3>
@@ -265,14 +265,14 @@ export default function AdminRulesPage() {
                       className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"
                       title="Editar"
                     >
-                      <Edit2 className="w-4 h-4" />
+                      <PencilSimple className="w-4 h-4" weight="bold" />
                     </button>
                     <button
                       onClick={() => handleDelete(rule.id)}
                       className="p-2 text-red-500/70 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
                       title="Excluir"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash className="w-4 h-4" weight="bold" />
                     </button>
                   </div>
                 </div>
