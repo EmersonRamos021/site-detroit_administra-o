@@ -317,6 +317,15 @@ export default function IdsManagerPage() {
 
               <div className="flex flex-col gap-3">
                  <button 
+                   onClick={() => updateStatus(selectedId, idsData[selectedId]?.status || "disponivel")}
+                   className="w-full py-3 px-4 rounded-xl bg-blue-600 text-white font-bold flex items-center gap-3 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20"
+                 >
+                   <Save size={18} />
+                   Salvar Apenas Dados
+                 </button>
+                 
+                 <div className="h-[1px] bg-white/10 my-1"></div>
+                 <button 
                    onClick={() => updateStatus(selectedId, "disponivel")}
                    className="w-full py-3 px-4 rounded-xl bg-white text-black font-bold flex items-center gap-3 hover:bg-zinc-200 transition-colors"
                  >
