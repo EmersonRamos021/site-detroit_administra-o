@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { MagnifyingGlass, CurrencyDollar, X } from "@phosphor-icons/react/dist/ssr";
+import { MagnifyingGlass, CurrencyDollar, X, FloppyDisk } from "@phosphor-icons/react/dist/ssr";
 
 type IDStatus = "disponivel" | "reservado" | "vendido" | "indisponivel";
 
@@ -320,7 +320,7 @@ export default function IdsManagerPage() {
                    onClick={() => updateStatus(selectedId, idsData[selectedId]?.status || "disponivel")}
                    className="w-full py-3 px-4 rounded-xl bg-blue-600 text-white font-bold flex items-center gap-3 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20"
                  >
-                   <Save size={18} />
+                   <FloppyDisk size={18} />
                    Salvar Apenas Dados
                  </button>
                  
