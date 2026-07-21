@@ -6,6 +6,9 @@ import { logAdminAction } from "@/lib/logger";
 interface DbId {
   game_id: number;
   status: string;
+  owner_name?: string;
+  owner_discord_id?: string;
+  owner_email?: string;
 }
 
 // Inicializador da tabela
@@ -44,6 +47,11 @@ async function ensureTable() {
   } catch(e) {
     // Ignorar se já estiver no formato correto
   }
+
+  // Migração segura para os campos de comprador (owner)
+  try { await query(`ALTER TABLE game_ids ADD COLUMN owner_name VARCHAR(255) NULL;`); } catch(e) {}
+  try { await query(`ALTER TABLE game_ids ADD COLUMN owner_discord_id VARCHAR(100) NULL;`); } catch(e) {}
+  try { await query(`ALTER TABLE game_ids ADD COLUMN owner_email VARCHAR(255) NULL;`); } catch(e) {}
 }
 
 export async function GET() {
@@ -55,7 +63,7 @@ export async function GET() {
   await ensureTable();
 
   try {
-    const ids = await query<DbId>("SELECT game_id, status FROM game_ids");
+    const ids = await query<DbId>("SELECT game_id, status, owner_name, owner_discord_id, owner_email FROM game_ids");
     return NextResponse.json(ids);
   } catch (error) {
     console.error("Erro ao buscar IDs:", error);
@@ -70,7 +78,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { game_id, status } = await req.json();
+    const { game_id, status, owner_name, owner_discord_id, owner_email } = await req.json();
 
     if (!game_id) {
       return NextResponse.json({ error: "ID Inválido" }, { status: 400 });
@@ -86,11 +94,14 @@ export async function POST(req: Request) {
       // Deleta da tabela, pois tudo que não está lá é branco/disponível
       await query("DELETE FROM game_ids WHERE game_id = ?", [game_id]);
     } else {
-      // Insere ou atualiza o status
+      // Insere ou atualiza o status e as informações do comprador
       await query(
-        `INSERT INTO game_ids (game_id, status) VALUES (?, ?)
-         ON DUPLICATE KEY UPDATE status = ?`,
-        [game_id, status, status]
+        `INSERT INTO game_ids (game_id, status, owner_name, owner_discord_id, owner_email) VALUES (?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE status = ?, owner_name = ?, owner_discord_id = ?, owner_email = ?`,
+        [
+          game_id, status, owner_name || null, owner_discord_id || null, owner_email || null,
+          status, owner_name || null, owner_discord_id || null, owner_email || null
+        ]
       );
     }
 

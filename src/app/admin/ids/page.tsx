@@ -8,16 +8,31 @@ type IDStatus = "disponivel" | "reservado" | "vendido" | "indisponivel";
 interface DbId {
   game_id: number;
   status: IDStatus;
+  owner_name?: string | null;
+  owner_discord_id?: string | null;
+  owner_email?: string | null;
 }
 
 export default function IdsManagerPage() {
-  const [idsData, setIdsData] = useState<Record<number, IDStatus>>({});
+  const [idsData, setIdsData] = useState<Record<number, Partial<DbId>>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<IDStatus | "all">("all");
   
   // Modal State
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [modalOwnerName, setModalOwnerName] = useState("");
+  const [modalOwnerDiscordId, setModalOwnerDiscordId] = useState("");
+  const [modalOwnerEmail, setModalOwnerEmail] = useState("");
+
+  useEffect(() => {
+    if (selectedId !== null) {
+       const existing = idsData[selectedId];
+       setModalOwnerName(existing?.owner_name || "");
+       setModalOwnerDiscordId(existing?.owner_discord_id || "");
+       setModalOwnerEmail(existing?.owner_email || "");
+    }
+  }, [selectedId, idsData]);
 
   // Paginação
   const [page, setPage] = useState(0);
@@ -35,9 +50,14 @@ export default function IdsManagerPage() {
       const res = await fetch("/api/admin/ids");
       const data: DbId[] = await res.json();
       
-      const map: Record<number, IDStatus> = {};
+      const map: Record<number, Partial<DbId>> = {};
       data.forEach((item) => {
-        map[item.game_id] = item.status;
+        map[item.game_id] = {
+           status: item.status,
+           owner_name: item.owner_name,
+           owner_discord_id: item.owner_discord_id,
+           owner_email: item.owner_email
+        };
       });
       setIdsData(map);
     } catch (e) {
@@ -47,21 +67,35 @@ export default function IdsManagerPage() {
   }
 
   async function updateStatus(id: number, nextStatus: IDStatus) {
-    const currentStatus = idsData[id] || "disponivel";
+    const current = idsData[id] || { status: "disponivel" };
     
     // Optimistic UI
-    setIdsData(prev => ({ ...prev, [id]: nextStatus }));
+    setIdsData(prev => ({ 
+       ...prev, 
+       [id]: { 
+         status: nextStatus, 
+         owner_name: modalOwnerName, 
+         owner_discord_id: modalOwnerDiscordId, 
+         owner_email: modalOwnerEmail 
+       } 
+    }));
     setSelectedId(null); // Fechar modal
 
     try {
       await fetch("/api/admin/ids", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ game_id: id, status: nextStatus }),
+        body: JSON.stringify({ 
+           game_id: id, 
+           status: nextStatus,
+           owner_name: modalOwnerName || null,
+           owner_discord_id: modalOwnerDiscordId || null,
+           owner_email: modalOwnerEmail || null
+        }),
       });
     } catch (e) {
       // Revert if error
-      setIdsData(prev => ({ ...prev, [id]: currentStatus }));
+      setIdsData(prev => ({ ...prev, [id]: current }));
       console.error(e);
       alert("Erro ao salvar status no banco de dados.");
     }
@@ -80,11 +114,11 @@ export default function IdsManagerPage() {
     let sold = 0;
     let reserved = 0;
 
-    Object.entries(idsData).forEach(([strId, status]) => {
+    Object.entries(idsData).forEach(([strId, data]) => {
       const id = parseInt(strId);
       const price = getPrice(id);
-      if (status === "vendido") sold += price;
-      if (status === "reservado") reserved += price;
+      if (data.status === "vendido") sold += price;
+      if (data.status === "reservado") reserved += price;
     });
 
     return { sold, reserved };
@@ -101,7 +135,7 @@ export default function IdsManagerPage() {
 
     const matchingIds: number[] = [];
     for (let i = MIN_ID; i <= MAX_ID; i++) {
-      const s = idsData[i] || "disponivel";
+      const s = idsData[i]?.status || "disponivel";
       if (filter !== "all" && s !== filter) continue;
       matchingIds.push(i);
     }
@@ -203,17 +237,20 @@ export default function IdsManagerPage() {
         ) : (
           <div className="grid grid-cols-5 sm:grid-cols-10 lg:grid-cols-[repeat(auto-fill,minmax(60px,1fr))] gap-2">
             {displayIds.map((id) => {
-               const status = idsData[id] || "disponivel";
+               const item = idsData[id];
+               const status = item?.status || "disponivel";
                const colorClass = 
                  status === "reservado" ? "bg-[#fcd34d] text-black" :
                  status === "vendido" ? "bg-[#10b981] text-white" :
                  status === "indisponivel" ? "bg-[#ef4444] text-white" :
                  "bg-white text-black"; // disponível
 
+               const titleStr = `ID: ${id} | R$ ${getPrice(id).toFixed(2)}${item?.owner_name ? `\nComprador: ${item.owner_name}` : ''}`;
+
                return (
                  <button
                    key={id}
-                   title={"ID: " + id + " | R$ " + getPrice(id).toFixed(2)}
+                   title={titleStr}
                    onClick={() => setSelectedId(id)}
                    className={"aspect-square flex items-center justify-center text-sm font-bold shadow-md hover:scale-105 active:scale-95 transition-transform " + colorClass}
                  >
@@ -236,13 +273,46 @@ export default function IdsManagerPage() {
                  <X size={24} />
               </button>
               
-              <div className="text-center mb-8">
+               <div className="text-center mb-6">
                  <h2 className="text-2xl font-bold text-white mb-1">
                    Gerenciar ID #{selectedId}
                  </h2>
                  <p className="text-zinc-400 text-sm">
                    Valor base: R$ {getPrice(selectedId).toFixed(2)}
                  </p>
+              </div>
+
+              <div className="mb-6 flex flex-col gap-3">
+                 <div>
+                    <label className="block text-xs text-zinc-400 mb-1 ml-1">Nome do Comprador (Opcional)</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ex: João Silva" 
+                      value={modalOwnerName}
+                      onChange={e => setModalOwnerName(e.target.value)}
+                      className="w-full bg-black/50 border border-white/10 rounded-xl h-10 px-4 text-white focus:outline-none focus:border-[var(--color-detroit-red)]"
+                    />
+                 </div>
+                 <div>
+                    <label className="block text-xs text-zinc-400 mb-1 ml-1">ID do Discord (Opcional)</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ex: 123456789012345678" 
+                      value={modalOwnerDiscordId}
+                      onChange={e => setModalOwnerDiscordId(e.target.value)}
+                      className="w-full bg-black/50 border border-white/10 rounded-xl h-10 px-4 text-white focus:outline-none focus:border-[var(--color-detroit-red)]"
+                    />
+                 </div>
+                 <div>
+                    <label className="block text-xs text-zinc-400 mb-1 ml-1">Email (Opcional)</label>
+                    <input 
+                      type="email" 
+                      placeholder="Ex: joao@email.com" 
+                      value={modalOwnerEmail}
+                      onChange={e => setModalOwnerEmail(e.target.value)}
+                      className="w-full bg-black/50 border border-white/10 rounded-xl h-10 px-4 text-white focus:outline-none focus:border-[var(--color-detroit-red)]"
+                    />
+                 </div>
               </div>
 
               <div className="flex flex-col gap-3">
