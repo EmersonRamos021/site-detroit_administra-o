@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { query } from "@/lib/db";
 import { NextRequest } from "next/server";
 import { requirePermission } from "@/lib/auth-check";
+import { parseTranscript } from "@/lib/parseHtml";
 
 const DISCORD_API = "https://discord.com/api/v10";
 
@@ -119,14 +120,17 @@ export async function POST(request: NextRequest) {
 
     const channel = await createRes.json();
 
-    // Enviar mensagem no canal com anexo via FormData
+    // Recuperar nome do admin ou email
+    const adminName = session.user.email ? session.user.email.split('@')[0] : 'Admin';
+
+    // Primeiro enviar a mensagem informando da reabertura e anexando o HTML por garantia
     const formData = new FormData();
     const payload_json = {
-        content: `<@${ticket.owner_id}> Seu ticket foi reaberto por **${session.user.name}** pelo Painel Admin!`,
+        content: `<@${ticket.owner_id}> Seu ticket foi reaberto por **${adminName}** pelo Painel Admin!`,
         embeds: [{
             color: 3447003, // blue
             title: "🔓 Ticket Reaberto",
-            description: "Este ticket foi reaberto através do Painel Web.\nO histórico do atendimento anterior está anexado acima.",
+            description: "Este ticket foi reaberto através do Painel Web.\nO histórico antigo do chat foi restaurado abaixo.",
             timestamp: new Date().toISOString()
         }]
     };
@@ -137,7 +141,7 @@ export async function POST(request: NextRequest) {
         formData.append("files[0]", blob, "historico_anterior.html");
     }
 
-    const msgRes = await fetch(`${DISCORD_API}/channels/${channel.id}/messages`, {
+    await fetch(`${DISCORD_API}/channels/${channel.id}/messages`, {
         method: 'POST',
         headers: {
             Authorization: `Bot ${token}`
@@ -145,11 +149,51 @@ export async function POST(request: NextRequest) {
         body: formData
     });
 
-    if (!msgRes.ok) {
-        console.error("Erro ao enviar msg:", await msgRes.text());
-        // Não falha tudo pois o canal já foi criado
-    }
+    // Restaurar mensagens como Webhooks se houver transcript_html
+    if (ticket.transcript_html) {
+        const messages = parseTranscript(ticket.transcript_html);
+        
+        if (messages.length > 0) {
+            // Limitar a 50 mensagens para evitar timeout e lentidão
+            const msgsToSend = messages.slice(-50);
 
+            // Criar webhook
+            const whRes = await fetch(`${DISCORD_API}/channels/${channel.id}/webhooks`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bot ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: "Reabertura Ticket" })
+            });
+
+            if (whRes.ok) {
+                const webhook = await whRes.json();
+                const whUrl = `${DISCORD_API}/webhooks/${webhook.id}/${webhook.token}`;
+
+                // Enviar cada mensagem sequencialmente
+                for (const msg of msgsToSend) {
+                    await fetch(whUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: msg.author,
+                            avatar_url: msg.avatar,
+                            content: msg.content.substring(0, 2000)
+                        })
+                    });
+                    // pequeno delay para não atingir rate limit de webhooks (5 por 2s)
+                    await new Promise(r => setTimeout(r, 400));
+                }
+
+                // Deletar webhook após o uso
+                await fetch(whUrl, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bot ${token}` }
+                });
+            }
+        }
+    }
     return Response.json({ success: true, channelId: channel.id });
 
   } catch (error: any) {
