@@ -54,7 +54,11 @@ export async function POST(request: NextRequest) {
     "mtaSocialInsta",
     "mtaSocialTiktok",
     "mtaSocialYoutube",
-    "botAvatarUrl"
+    "botAvatarUrl",
+    "antiRaid_threshold",
+    "antiRaid_time",
+    "antiNuke_threshold",
+    "antiNuke_time"
   ];
 
   for (const key of keysToUpdate) {

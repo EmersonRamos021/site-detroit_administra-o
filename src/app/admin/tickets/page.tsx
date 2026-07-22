@@ -3,6 +3,7 @@ import { query } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ChatTeardropText, FileHtml, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
+import ReopenTicketButton from "@/components/ReopenTicketButton";
 
 interface TicketRow {
   id: number;
@@ -118,13 +119,16 @@ export default async function TicketsListPage({ searchParams }: { searchParams: 
                         {new Date(ticket.closed_at).toLocaleString("pt-BR")}
                       </td>
                       <td className="p-4 text-right">
-                        <Link
-                          href={`/admin/tickets/${ticket.id}`}
-                          className="inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-[#3b82f6]/10 text-[#3b82f6] hover:bg-[#3b82f6]/20 transition-colors text-sm font-medium"
-                        >
-                          <FileHtml size={16} />
-                          Ver HTML
-                        </Link>
+                        <div className="flex items-center justify-end gap-3">
+                          <Link
+                            href={`/admin/tickets/${ticket.id}`}
+                            className="inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-[#3b82f6]/10 text-[#3b82f6] hover:bg-[#3b82f6]/20 transition-colors text-sm font-medium"
+                          >
+                            <FileHtml size={16} />
+                            Ver HTML
+                          </Link>
+                          <ReopenTicketButton ticketId={ticket.id} />
+                        </div>
                       </td>
                     </tr>
                   ))

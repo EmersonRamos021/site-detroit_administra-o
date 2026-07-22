@@ -46,7 +46,11 @@ export default function BotSettingsPage() {
     mtaSocialInsta: "",
     mtaSocialTiktok: "",
     mtaSocialYoutube: "",
-    botAvatarUrl: ""
+    botAvatarUrl: "",
+    antiRaid_threshold: "10",
+    antiRaid_time: "10",
+    antiNuke_threshold: "3",
+    antiNuke_time: "5"
   });
 
   useEffect(() => {
@@ -540,6 +544,72 @@ export default function BotSettingsPage() {
                 />
                 <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-detroit-red)]"></div>
               </label>
+            </div>
+
+            <hr className="border-white/5 my-6" />
+
+            {/* SEGURANÇA AVANÇADA (Anti-Nuke e Anti-Raid) */}
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">🛡️ Segurança Avançada</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-red-900/10 p-6 rounded-xl border border-red-500/20">
+                <div className="md:col-span-2">
+                  <p className="text-sm text-red-200/70 mb-4">
+                    Configure os limites do sistema de defesa automático contra invasões e destruição do servidor.
+                  </p>
+                </div>
+
+                {/* ANTI-RAID */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-red-400">Proteção Anti-Raid</h3>
+                  <div>
+                    <label className={labelClass}>Membros Invasores (Limite)</label>
+                    <input 
+                      type="number" 
+                      value={form.antiRaid_threshold || "10"} 
+                      onChange={e => setForm({...form, antiRaid_threshold: e.target.value})} 
+                      className={inputClass} 
+                      placeholder="Ex: 10"
+                    />
+                    <p className="text-xs text-zinc-500 mt-1">Aciona se X membros entrarem em massa.</p>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Janela de Tempo (Segundos)</label>
+                    <input 
+                      type="number" 
+                      value={form.antiRaid_time || "10"} 
+                      onChange={e => setForm({...form, antiRaid_time: e.target.value})} 
+                      className={inputClass} 
+                      placeholder="Ex: 10"
+                    />
+                  </div>
+                </div>
+
+                {/* ANTI-NUKE */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-red-400">Proteção Anti-Nuke</h3>
+                  <div>
+                    <label className={labelClass}>Canais/Cargos Deletados (Limite)</label>
+                    <input 
+                      type="number" 
+                      value={form.antiNuke_threshold || "3"} 
+                      onChange={e => setForm({...form, antiNuke_threshold: e.target.value})} 
+                      className={inputClass} 
+                      placeholder="Ex: 3"
+                    />
+                    <p className="text-xs text-zinc-500 mt-1">Aciona se a Staff deletar X itens.</p>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Janela de Tempo (Segundos)</label>
+                    <input 
+                      type="number" 
+                      value={form.antiNuke_time || "5"} 
+                      onChange={e => setForm({...form, antiNuke_time: e.target.value})} 
+                      className={inputClass} 
+                      placeholder="Ex: 5"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="pt-4 flex justify-end">
