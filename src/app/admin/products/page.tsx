@@ -290,7 +290,7 @@ export default function AdminProductsPage() {
 
                     {/* Preview */}
                     {(uploadPreview || form.image_url) && (
-                      <div className="relative w-32 h-24 rounded-xl overflow-hidden bg-zinc-800 border border-white/10 flex-shrink-0">
+                      <div className="relative aspect-square w-24 rounded-xl overflow-hidden bg-zinc-800 border border-white/10 flex-shrink-0">
                         <Image
                           src={uploadPreview || form.image_url}
                           alt="Preview"
@@ -386,7 +386,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 {/* Image */}
-                <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0">
+                <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0 aspect-square">
                   {product.image_url ? (
                     <Image src={product.image_url} alt={product.title} fill className="object-cover" sizes="56px" />
                   ) : (
@@ -415,10 +415,40 @@ export default function AdminProductsPage() {
                     className="px-3 py-2 rounded-lg bg-zinc-800 text-zinc-300 text-xs font-bold hover:bg-zinc-700 transition-all">
                     Editar
                   </button>
-                  <button onClick={() => handleDelete(product.id, product.active)}
-                    className="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all">
-                    {product.active ? "Desativar" : "Excluir"}
-                  </button>
+                  {product.active ? (
+                    <button onClick={() => handleDelete(product.id, true)}
+                      className="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all">
+                      Desativar
+                    </button>
+                  ) : (
+                    <>
+                      <button onClick={async () => {
+                        const productFull = products.find(p => p.id === product.id);
+                        if (!productFull) return;
+                        
+                        const body = { 
+                          ...productFull, 
+                          active: true, 
+                          price: Number(productFull.price), 
+                          category_id: parseInt(categories.find(c => c.name === productFull.category_name)?.id?.toString() || "0") 
+                        };
+                        try {
+                          const res = await fetch("/api/admin/products", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+                          if (!res.ok) throw new Error((await res.json()).error);
+                          fetchData();
+                        } catch (err) {
+                          alert(err instanceof Error ? err.message : "Erro ao reativar");
+                        }
+                      }}
+                        className="px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all">
+                        Reativar
+                      </button>
+                      <button onClick={() => handleDelete(product.id, false)}
+                        className="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all">
+                        Excluir
+                      </button>
+                    </>
+                  )}
                 </div>
               </motion.div>
             ))}
